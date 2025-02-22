@@ -1,0 +1,5 @@
+spring.datasource.url=jdbc:postgresql://localhost:5432/battery_db
+spring.datasource.username=postgres
+spring.datasource.password=salasana
+spring.jpa.hibernate.ddl-auto=update
+server.port=8080
