@@ -1,0 +1,19 @@
+backend/
+│── src/
+│   ├── main/
+│   │   ├── java/com/example/battbatt/
+│   │   │   ├── controller/
+│   │   │   │   ├── BatteryController.java
+│   │   │   │   ├── StorageController.java
+│   │   │   ├── model/
+│   │   │   │   ├── Battery.java
+│   │   │   │   ├── Storage.java
+│   │   │   ├── repository/
+│   │   │   │   ├── BatteryRepository.java
+│   │   │   │   ├── StorageRepository.java
+│   │   │   ├── service/
+│   │   │   │   ├── BatteryService.java
+│   │   │   │   ├── StorageService.java
+│   ├── resources/
+│   │   ├── application.properties
+│── pom.xml
