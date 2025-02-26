@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver>
+    <solutionClass>com.battbatt.model.BatteryProcessing</solutionClass>
+    <entityClass>com.battbatt.model.Battery</entityClass>
+
+    <scoreDirectorFactory>
+        <easyScoreCalculatorClass>com.battbatt.solver.BatteryProcessingSolver</easyScoreCalculatorClass>
+    </scoreDirectorFactory>
+
+    <termination>
+        <secondsSpentLimit>10</secondsSpentLimit>
+    </termination>
+</solver>
