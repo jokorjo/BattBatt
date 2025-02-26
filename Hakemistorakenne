@@ -6,6 +6,11 @@ BattBatt/
 │   │   │   ├── model/
 │   │   │   │   ├── Battery.java
 │   │   │   │   ├── Storage.java
+│   │   │   ├── repository/
+│   │   │   │   ├── BatteryRepository.java
+│   │   │   │   ├── StorageRepository.java
+│   │   │   ├── service/
+│   │   │   │   ├── OptaPlannerService.java
 │   │   │   ├── controller/
 │   │   │   │   ├── BatteryController.java
 │   │   │   │   ├── StorageController.java
