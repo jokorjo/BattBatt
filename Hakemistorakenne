@@ -14,6 +14,9 @@ BattBatt/
 │   │   │   ├── config/
 │   │   │   │   ├── SolverConfig.xml
 │   │   │   ├── BattBattBackend.java
+│   │   │   ├── resources/
+│   │   │   │   ├── application.properties  
+│   │   │   │   ├── solver/SolverConfig.xml
 │   ├── pom.xml
 │   ├── application.properties
 │
