@@ -11,14 +11,11 @@ BattBatt/
 │   │   │   │   ├── StorageController.java
 │   │   │   ├── solver/
 │   │   │   │   ├── BatteryProcessingSolver.java
-│   │   │   ├── config/
-│   │   │   │   ├── SolverConfig.xml
 │   │   │   ├── BattBattBackend.java
 │   │   │   ├── resources/
 │   │   │   │   ├── application.properties  
-│   │   │   │   ├── solver/SolverConfig.xml
+│   │   │   │   ├── solver/SolverConfig.xml  <-- 🔹 Säilytä vain tämä!
 │   ├── pom.xml
-│   ├── application.properties
 │
 ├── frontend/
 │   ├── node_modules/
