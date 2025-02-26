@@ -1,19 +1,33 @@
-backend/
-│── src/
-│   ├── main/
-│   │   ├── java/com/example/battbatt/
-│   │   │   ├── controller/
-│   │   │   │   ├── BatteryController.java
-│   │   │   │   ├── StorageController.java
+BattBatt/
+│
+├── backend/
+│   ├── src/
+│   │   ├── main/java/com/battbatt/
 │   │   │   ├── model/
 │   │   │   │   ├── Battery.java
 │   │   │   │   ├── Storage.java
-│   │   │   ├── repository/
-│   │   │   │   ├── BatteryRepository.java
-│   │   │   │   ├── StorageRepository.java
-│   │   │   ├── service/
-│   │   │   │   ├── BatteryService.java
-│   │   │   │   ├── StorageService.java
-│   ├── resources/
-│   │   ├── application.properties
-│── pom.xml
+│   │   │   ├── controller/
+│   │   │   │   ├── BatteryController.java
+│   │   │   │   ├── StorageController.java
+│   │   │   ├── solver/
+│   │   │   │   ├── BatteryProcessingSolver.java
+│   │   │   ├── config/
+│   │   │   │   ├── SolverConfig.xml
+│   │   │   ├── BattBattBackend.java
+│   ├── pom.xml
+│   ├── application.properties
+│
+├── frontend/
+│   ├── node_modules/
+│   ├── public/
+│   │   ├── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── App.js
+│   │   │   ├── BatteryList.js
+│   │   │   ├── Scanner.js  <-- (Quagga.js-pohjainen viivakoodiskanneri)
+│   │   ├── index.js
+│   ├── package.json
+│   ├── package-lock.json
+│
+└── README.md
