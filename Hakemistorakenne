@@ -32,6 +32,7 @@ BattBatt/
 │   │   │   ├── App.js
 │   │   │   ├── BatteryList.js
 │   │   │   ├── Scanner.js  <-- (Quagga.js-pohjainen viivakoodiskanneri)
+│   │   ├── api.js
 │   │   ├── index.js
 │   ├── package.json
 │   ├── package-lock.json
