@@ -1,4 +1,4 @@
-package com.example.battbatt;
+package com.battbatt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
