@@ -1,4 +1,4 @@
-package com.example.battbatt.entity;
+package com.battbatt.entity;
 
 import jakarta.persistence.*;
 
