@@ -1,6 +1,9 @@
 package com.battbatt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Storage {
@@ -9,11 +12,16 @@ public class Storage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;              // esim "NMC Pack Storage"
+    private String name;        // esim "NMC Pack Storage"
 
-    private String chemistry;         // NMC, LFP, OTHER, CRITICAL
+    private String chemistry;   // NMC, LFP, ANY
 
-    private String storageType;       // PACK, PALLET, OPEN, CRITICAL
+    private String storageType; // PACK, PALLET, OPEN
+
+    // 🔥 estää infinite loop JSONissa
+    @OneToMany(mappedBy = "storage")
+    @JsonIgnore
+    private List<StorageSlot> slots;
 
     // ===== GETTERIT & SETTERIT =====
 
