@@ -16,6 +16,12 @@ public class StorageSlotController {
         this.repo = repo;
     }
 
+    // 🔥 TEST ENDPOINT
+    @GetMapping("/test")
+    public String test() {
+        return "SLOTS WORKING";
+    }
+
     @GetMapping
     public List<StorageSlot> getAll() {
         return repo.findAll();
