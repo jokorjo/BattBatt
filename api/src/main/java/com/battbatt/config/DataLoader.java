@@ -1,6 +1,7 @@
 package com.battbatt.config;
 
 import com.battbatt.entity.*;
+import com.battbatt.repository.StorageRepository;
 import com.battbatt.repository.StorageSlotRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 public class DataLoader {
 
     @Bean
-    CommandLineRunner loadData(StorageSlotRepository slotRepo) {
+    CommandLineRunner loadData(StorageRepository storageRepo,
+                               StorageSlotRepository slotRepo) {
         return args -> {
 
             // 🔹 NMC PACK STORAGE
@@ -19,7 +21,8 @@ public class DataLoader {
             nmcPack.setChemistry("NMC");
             nmcPack.setStorageType("PACK");
 
-            // A, B, C (10m³)
+            storageRepo.save(nmcPack); // 🔥 TÄRKEIN FIX
+
             for (String s : new String[]{"A","B","C"}) {
                 StorageSlot slot = new StorageSlot();
                 slot.setName(s);
@@ -28,11 +31,13 @@ public class DataLoader {
                 slotRepo.save(slot);
             }
 
-            // 🔹 NMC PALLET STORAGE (16 kpl, 1m³)
+            // 🔹 NMC PALLET STORAGE
             Storage nmcPallet = new Storage();
             nmcPallet.setName("NMC Pallet");
             nmcPallet.setChemistry("NMC");
             nmcPallet.setStorageType("PALLET");
+
+            storageRepo.save(nmcPallet); // 🔥 FIX
 
             for (String s : new String[]{
                     "A1","A2","B1","B2","C1","C2","D1","D2",
@@ -45,11 +50,13 @@ public class DataLoader {
                 slotRepo.save(slot);
             }
 
-            // 🔹 OPEN STORAGE (100m³)
+            // 🔹 OPEN STORAGE
             Storage open = new Storage();
             open.setName("Open Storage");
             open.setChemistry("ANY");
             open.setStorageType("OPEN");
+
+            storageRepo.save(open); // 🔥 FIX
 
             StorageSlot openSlot = new StorageSlot();
             openSlot.setName("A");
