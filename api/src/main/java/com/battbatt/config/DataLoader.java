@@ -1,7 +1,7 @@
 package com.battbatt.config;
 
 import com.battbatt.entity.*;
-import com.battbatt.repository.*;
+import com.battbatt.repository.StorageSlotRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class DataLoader {
 
     @Bean
-    CommandLineRunner loadData(StorageRepository storageRepo,
-                               StorageSlotRepository slotRepo) {
+    CommandLineRunner loadData(StorageSlotRepository slotRepo) {
         return args -> {
 
             // 🔹 NMC PACK STORAGE
@@ -19,7 +18,6 @@ public class DataLoader {
             nmcPack.setName("NMC Pack");
             nmcPack.setChemistry("NMC");
             nmcPack.setStorageType("PACK");
-            storageRepo.save(nmcPack);
 
             // A, B, C (10m³)
             for (String s : new String[]{"A","B","C"}) {
@@ -35,7 +33,6 @@ public class DataLoader {
             nmcPallet.setName("NMC Pallet");
             nmcPallet.setChemistry("NMC");
             nmcPallet.setStorageType("PALLET");
-            storageRepo.save(nmcPallet);
 
             for (String s : new String[]{
                     "A1","A2","B1","B2","C1","C2","D1","D2",
@@ -53,7 +50,6 @@ public class DataLoader {
             open.setName("Open Storage");
             open.setChemistry("ANY");
             open.setStorageType("OPEN");
-            storageRepo.save(open);
 
             StorageSlot openSlot = new StorageSlot();
             openSlot.setName("A");
