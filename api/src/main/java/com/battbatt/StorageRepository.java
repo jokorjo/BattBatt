@@ -1,6 +1,6 @@
-package com.example.battbatt.repository;
+package com.battbatt.repository;
 
-import com.example.battbatt.model.Storage;
+import com.battbatt.model.Storage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
