@@ -10,8 +10,11 @@ public class BatteryType {
     private Long id;
 
     private String name;        // "NMC Battery 1"
-    private String type;        // Pack / Module
-    private String chemistry;   // NMC / LFP
+
+    private String type;        // PACK / MODULE
+    private String chemistry;   // NMC / LFP / OTHER
+
+    private String classification; // 🔥 CRITICAL / STABLE
 
     private double length;
     private double width;
@@ -21,7 +24,6 @@ public class BatteryType {
 
     private int voltage;
     private double kwh;
-    
 
     private int mechanicalTime;
     private int preparationTime;
@@ -38,6 +40,10 @@ public class BatteryType {
 
     public String getChemistry() { return chemistry; }
     public void setChemistry(String chemistry) { this.chemistry = chemistry; }
+
+    // 🔥 UUSI
+    public String getClassification() { return classification; }
+    public void setClassification(String classification) { this.classification = classification; }
 
     public double getLength() { return length; }
     public void setLength(double length) { this.length = length; }
@@ -57,10 +63,10 @@ public class BatteryType {
     public double getKwh() { return kwh; }
     public void setKwh(double kwh) { this.kwh = kwh; }
 
-public double getAh() {
-    if (voltage == 0) return 0;
-    return (1000 * kwh) / voltage;
-}
+    public double getAh() {
+        if (voltage == 0) return 0;
+        return (1000 * kwh) / voltage;
+    }
 
     public int getMechanicalTime() { return mechanicalTime; }
     public void setMechanicalTime(int mechanicalTime) { this.mechanicalTime = mechanicalTime; }
@@ -68,7 +74,7 @@ public double getAh() {
     public int getPreparationTime() { return preparationTime; }
     public void setPreparationTime(int preparationTime) { this.preparationTime = preparationTime; }
 
-    // 🔥 BONUS: tilavuus suoraan laskettuna
+    // 🔥 BONUS: tilavuus
     public double getVolume() {
         return length * width * height;
     }
