@@ -35,6 +35,11 @@ public class DataLoader {
 
             // 🔹 OTHER (PALLET only)
             createPalletStorage(storageRepo, slotRepo, "Other Pallet", "ANY");
+
+            // 🔥 OVERFLOW STORAGE (tärkein lisä)
+            createOverflowStorage(storageRepo, slotRepo, "Overflow NMC", "NMC");
+            createOverflowStorage(storageRepo, slotRepo, "Overflow LFP", "LFP");
+            createOverflowStorage(storageRepo, slotRepo, "Overflow Other", "ANY");
         };
     }
 
@@ -98,6 +103,25 @@ public class DataLoader {
         StorageSlot slot = new StorageSlot();
         slot.setName("A");
         slot.setCapacity(100);
+        slot.setStorage(storage);
+        slotRepo.save(slot);
+    }
+
+    // 🚨 OVERFLOW (fallback – iso kapasiteetti, huonoin vaihtoehto)
+    private void createOverflowStorage(StorageRepository storageRepo,
+                                       StorageSlotRepository slotRepo,
+                                       String name,
+                                       String chemistry) {
+
+        Storage storage = new Storage();
+        storage.setName(name);
+        storage.setChemistry(chemistry);
+        storage.setStorageType("OPEN"); // 🔥 tärkeä: sama tyyppi kuin open
+        storage = storageRepo.save(storage);
+
+        StorageSlot slot = new StorageSlot();
+        slot.setName("O1");
+        slot.setCapacity(9999); // käytännössä rajaton
         slot.setStorage(storage);
         slotRepo.save(slot);
     }
