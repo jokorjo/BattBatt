@@ -1,7 +1,7 @@
-package com.example.battbatt.controller;
+package com.battbatt.controller;
 
-import com.example.battbatt.entity.Storage;
-import com.example.battbatt.repository.StorageRepository;
+import com.battbatt.entity.Storage;
+import com.battbatt.repository.StorageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
