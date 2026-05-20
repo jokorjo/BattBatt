@@ -20,7 +20,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
     private Constraint chemistryConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
-                        b.getBatteryType() != null && // 🔥 LISÄTTY (estää null crashin)
+                        b.getBatteryType() != null &&
                         !b.getBatteryType().getChemistry()
                                 .equals(b.getStorageSlot().getStorage().getChemistry()) &&
                         !b.getStorageSlot().getStorage().getChemistry().equals("ANY"))
@@ -33,12 +33,12 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .groupBy(
                         Battery::getStorageSlot,
-                        ConstraintCollectors.sum(b -> b.getBatteryType().getVolume())
+                        ConstraintCollectors.sumDouble(b -> b.getBatteryType().getVolume()) // 🔥 FIX
                 )
                 .filter((slot, used) -> used > slot.getCapacity())
                 .penalize("Over capacity",
                         HardSoftScore.ONE_HARD,
-                        (slot, used) -> 1); // ✅ oikein
+                        (slot, used) -> 1);
     }
 
     // 🥉 Vältä open storagea
