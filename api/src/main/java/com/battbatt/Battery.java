@@ -2,7 +2,11 @@ package com.battbatt.entity;
 
 import jakarta.persistence.*;
 
+import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.variable.PlanningVariable;
+
 @Entity
+@PlanningEntity
 public class Battery {
 
     @Id
@@ -16,7 +20,8 @@ public class Battery {
     @ManyToOne
     private BatteryType batteryType;
 
-    // 🔥 optimoinnin tulos (mihin varastoon menee)
+    // 🔥 OPTIMOITAVA KENTTÄ
+    @PlanningVariable(valueRangeProviderRefs = "slotRange")
     @ManyToOne
     private StorageSlot storageSlot;
 
