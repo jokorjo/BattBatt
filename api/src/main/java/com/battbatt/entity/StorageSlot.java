@@ -1,5 +1,6 @@
 package com.battbatt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,12 +10,12 @@ public class StorageSlot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;      // A, B, C, A1, B2 jne
+    private String name;      // A, B, C, A1...
 
-    private double capacity;  // 10 (pack), 1 (module), 100 (open)
+    private double capacity;
 
-    // 🔥 TÄRKEÄ MUUTOS: cascade poistettu
     @ManyToOne
+    @JsonIgnoreProperties("slots") // 🔥 estää loopin Storage → slots → storage
     private Storage storage;
 
     // ===== GETTERIT & SETTERIT =====
