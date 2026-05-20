@@ -18,7 +18,7 @@ public class Battery {
 
     // 🔥 optimoinnin tulos (mihin varastoon menee)
     @ManyToOne
-private StorageSlot storageSlot;
+    private StorageSlot storageSlot;
 
     // ===== GETTERIT & SETTERIT =====
 
@@ -42,12 +42,11 @@ private StorageSlot storageSlot;
         this.batteryType = batteryType;
     }
 
-   public StorageSlot getStorageSlot() {
-    return storageSlot;
-}
+    public StorageSlot getStorageSlot() {
+        return storageSlot;
+    }
 
-public void setStorageSlot(StorageSlot storageSlot) {
-    this.storageSlot = storageSlot;
-}
+    public void setStorageSlot(StorageSlot storageSlot) {
+        this.storageSlot = storageSlot;
     }
 }
