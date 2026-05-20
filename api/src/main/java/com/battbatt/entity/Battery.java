@@ -1,5 +1,6 @@
 package com.battbatt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
@@ -13,16 +14,16 @@ public class Battery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔹 yksittäisen akun tunniste
     private String barcode;
 
-    // 🔥 linkki akkumalliin (NMC Battery 1 jne)
     @ManyToOne
     private BatteryType batteryType;
 
-    // 🔥 OPTIMOITAVA KENTTÄ
+    // 🔥 OPTIMOITAVA
     @PlanningVariable(valueRangeProviderRefs = "slotRange")
     @ManyToOne
+    @JsonIgnoreProperties("storage") 
+    // 🔥 estää loopin: Battery → Slot → Storage → Slot → ...
     private StorageSlot storageSlot;
 
     // ===== GETTERIT & SETTERIT =====
