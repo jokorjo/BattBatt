@@ -12,7 +12,8 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 chemistryConstraint(factory),
                 criticalConstraint(factory),
                 capacityConstraint(factory),
-                avoidOpenStorage(factory)
+                avoidOpenStorage(factory),
+                avoidOverflow(factory) // 🔥 UUSI
         };
     }
 
@@ -25,7 +26,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                     String batteryChem = b.getBatteryType().getChemistry();
                     String storageChem = b.getStorageSlot().getStorage().getChemistry();
 
-                    // ANY = sallittu fallback
+                    // ANY = sallittu fallback (OTHER, overflow jne)
                     if ("ANY".equalsIgnoreCase(storageChem)) return false;
 
                     return !batteryChem.equalsIgnoreCase(storageChem);
@@ -41,7 +42,6 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> {
                     String classification = b.getBatteryType().getClassification();
 
-                    // vain criticalit
                     if (!"CRITICAL".equalsIgnoreCase(classification)) {
                         return false;
                     }
@@ -64,7 +64,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter((slot, used) -> used > slot.getCapacity())
                 .penalize("Over capacity",
                         HardSoftScore.ONE_HARD,
-                        (slot, used) -> 1);
+                        (slot, used) -> used - (int) slot.getCapacity()); // 🔥 parempi penalointi
     }
 
     // ⚠️ OPEN → vältetään (soft)
@@ -74,5 +74,14 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                         "OPEN".equalsIgnoreCase(
                                 b.getStorageSlot().getStorage().getStorageType()))
                 .penalize("Avoid open storage", HardSoftScore.ONE_SOFT);
+    }
+
+    // 🚨 OVERFLOW → erittäin huono (soft, mutta iso penalty)
+    private Constraint avoidOverflow(ConstraintFactory factory) {
+        return factory.from(Battery.class)
+                .filter(b -> b.getStorageSlot() != null &&
+                        b.getStorageSlot().getStorage().getName() != null &&
+                        b.getStorageSlot().getStorage().getName().toLowerCase().contains("overflow"))
+                .penalize("Avoid overflow storage", HardSoftScore.ofSoft(10)); // 🔥 isompi paino
     }
 }
