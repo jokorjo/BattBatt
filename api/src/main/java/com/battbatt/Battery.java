@@ -4,18 +4,49 @@ import jakarta.persistence.*;
 
 @Entity
 public class Battery {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    private String barcode;
-    private String type; // "stabiili" tai "kriittinen"
-    private int width;
-    private int height;
-    private int depth;
 
+    // 🔹 yksittäisen akun tunniste
+    private String barcode;
+
+    // 🔥 linkki akkumalliin (NMC Battery 1 jne)
+    @ManyToOne
+    private BatteryType batteryType;
+
+    // 🔥 optimoinnin tulos (mihin varastoon menee)
     @ManyToOne
     private Storage storage;
 
-    // Getterit ja setterit
+    // ===== GETTERIT & SETTERIT =====
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
+    public BatteryType getBatteryType() {
+        return batteryType;
+    }
+
+    public void setBatteryType(BatteryType batteryType) {
+        this.batteryType = batteryType;
+    }
+
+    public Storage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(Storage storage) {
+        this.storage = storage;
+    }
 }
