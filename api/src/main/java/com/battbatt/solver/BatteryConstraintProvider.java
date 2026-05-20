@@ -1,7 +1,6 @@
 package com.battbatt.solver;
 
 import com.battbatt.entity.Battery;
-import com.battbatt.entity.StorageSlot;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.score.stream.*;
 
@@ -11,29 +10,69 @@ public class BatteryConstraintProvider implements ConstraintProvider {
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[] {
                 chemistryConstraint(factory),
+                criticalConstraint(factory),
+                otherConstraint(factory),
                 capacityConstraint(factory),
                 avoidOpenStorage(factory)
         };
     }
 
-    // 🥇 Kemia ei saa olla väärä
+    // 🥇 Kemia (NMC / LFP)
     private Constraint chemistryConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
-                        b.getBatteryType() != null &&
-                        !b.getBatteryType().getChemistry()
-                                .equals(b.getStorageSlot().getStorage().getChemistry()) &&
-                        !b.getStorageSlot().getStorage().getChemistry().equals("ANY"))
+                        b.getBatteryType() != null)
+                .filter(b -> {
+                    String batteryChem = b.getBatteryType().getChemistry();
+                    String storageChem = b.getStorageSlot().getStorage().getChemistry();
+
+                    // ANY = sallittu fallback
+                    if ("ANY".equals(storageChem)) return false;
+
+                    return !batteryChem.equals(storageChem);
+                })
                 .penalize("Wrong chemistry", HardSoftScore.ONE_HARD);
     }
 
-    // 🥈 Kapasiteetti ei saa ylittyä
+    // 🥈 CRITICAL → vain PACK
+    private Constraint criticalConstraint(ConstraintFactory factory) {
+        return factory.from(Battery.class)
+                .filter(b -> b.getStorageSlot() != null &&
+                        b.getBatteryType() != null)
+                .filter(b -> {
+                    // 🔥 oletus: type kertoo critical
+                    if (!"CRITICAL".equalsIgnoreCase(b.getBatteryType().getType())) {
+                        return false;
+                    }
+
+                    return !b.getStorageSlot().getStorage().getStorageType().equals("PACK");
+                })
+                .penalize("Critical must go to PACK", HardSoftScore.ONE_HARD);
+    }
+
+    // 🥉 OTHER → vain PALLET
+    private Constraint otherConstraint(ConstraintFactory factory) {
+        return factory.from(Battery.class)
+                .filter(b -> b.getStorageSlot() != null &&
+                        b.getBatteryType() != null)
+                .filter(b -> {
+                    // 🔥 oletus: type kertoo OTHER
+                    if (!"OTHER".equalsIgnoreCase(b.getBatteryType().getType())) {
+                        return false;
+                    }
+
+                    return !b.getStorageSlot().getStorage().getStorageType().equals("PALLET");
+                })
+                .penalize("Other must go to PALLET", HardSoftScore.ONE_HARD);
+    }
+
+    // 🧱 Kapasiteetti
     private Constraint capacityConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .groupBy(
                         Battery::getStorageSlot,
-                        ConstraintCollectors.sum(b -> (int) b.getBatteryType().getVolume()) // 🔥 FIX
+                        ConstraintCollectors.sum(b -> (int) b.getBatteryType().getVolume())
                 )
                 .filter((slot, used) -> used > slot.getCapacity())
                 .penalize("Over capacity",
@@ -41,7 +80,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                         (slot, used) -> 1);
     }
 
-    // 🥉 Vältä open storagea
+    // ⚠️ OPEN → vältetään (soft)
     private Constraint avoidOpenStorage(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
