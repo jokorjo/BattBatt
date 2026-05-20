@@ -55,19 +55,31 @@ public class DataLoader {
                 slotRepo.save(slot);
             }
 
-            // 🔹 OPEN STORAGE
-            Storage open = new Storage();
-            open.setName("Open Storage");
-            open.setChemistry("ANY");
-            open.setStorageType("OPEN");
+            // 🔹 OPEN NMC
+Storage openNmc = new Storage();
+openNmc.setName("Open NMC");
+openNmc.setChemistry("NMC");
+openNmc.setStorageType("OPEN");
+openNmc = storageRepo.save(openNmc);
 
-            storageRepo.save(open);
+StorageSlot openNmcSlot = new StorageSlot();
+openNmcSlot.setName("A");
+openNmcSlot.setCapacity(100);
+openNmcSlot.setStorage(openNmc);
+slotRepo.save(openNmcSlot);
 
-            StorageSlot openSlot = new StorageSlot();
-            openSlot.setName("A");
-            openSlot.setCapacity(100);
-            openSlot.setStorage(open);
-            slotRepo.save(openSlot);
+// 🔹 OPEN LFP
+Storage openLfp = new Storage();
+openLfp.setName("Open LFP");
+openLfp.setChemistry("LFP");
+openLfp.setStorageType("OPEN");
+openLfp = storageRepo.save(openLfp);
+
+StorageSlot openLfpSlot = new StorageSlot();
+openLfpSlot.setName("A");
+openLfpSlot.setCapacity(100);
+openLfpSlot.setStorage(openLfp);
+slotRepo.save(openLfpSlot);
         };
     }
 }
