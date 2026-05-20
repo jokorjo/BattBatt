@@ -42,11 +42,12 @@ private StorageSlot storageSlot;
         this.batteryType = batteryType;
     }
 
-    public Storage getStorage() {
-        return storage;
-    }
+   public StorageSlot getStorageSlot() {
+    return storageSlot;
+}
 
-    public void setStorage(Storage storage) {
-        this.storage = storage;
+public void setStorageSlot(StorageSlot storageSlot) {
+    this.storageSlot = storageSlot;
+}
     }
 }
