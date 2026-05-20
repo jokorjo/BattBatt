@@ -18,7 +18,7 @@ public class Battery {
 
     // 🔥 optimoinnin tulos (mihin varastoon menee)
     @ManyToOne
-    private Storage storage;
+private StorageSlot storageSlot;
 
     // ===== GETTERIT & SETTERIT =====
 
