@@ -15,13 +15,18 @@ public class DataLoader {
                                StorageSlotRepository slotRepo) {
         return args -> {
 
+            // 🔥 ESTÄ DUPLIKAATIT (tärkeä)
+            if (storageRepo.count() > 0) {
+                return;
+            }
+
             // 🔹 NMC PACK STORAGE
             Storage nmcPack = new Storage();
             nmcPack.setName("NMC Pack");
             nmcPack.setChemistry("NMC");
             nmcPack.setStorageType("PACK");
 
-            storageRepo.save(nmcPack); // 🔥 TÄRKEIN FIX
+            storageRepo.save(nmcPack);
 
             for (String s : new String[]{"A","B","C"}) {
                 StorageSlot slot = new StorageSlot();
@@ -37,7 +42,7 @@ public class DataLoader {
             nmcPallet.setChemistry("NMC");
             nmcPallet.setStorageType("PALLET");
 
-            storageRepo.save(nmcPallet); // 🔥 FIX
+            storageRepo.save(nmcPallet);
 
             for (String s : new String[]{
                     "A1","A2","B1","B2","C1","C2","D1","D2",
@@ -56,7 +61,7 @@ public class DataLoader {
             open.setChemistry("ANY");
             open.setStorageType("OPEN");
 
-            storageRepo.save(open); // 🔥 FIX
+            storageRepo.save(open);
 
             StorageSlot openSlot = new StorageSlot();
             openSlot.setName("A");
