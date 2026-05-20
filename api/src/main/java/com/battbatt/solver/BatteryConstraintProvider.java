@@ -29,6 +29,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
     // 🥈 Kapasiteetti ei saa ylittyä
     private Constraint capacityConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
+                .filter(b -> b.getStorageSlot() != null) // 🔥 tärkeä null check
                 .groupBy(
                         Battery::getStorageSlot,
                         ConstraintCollectors.sum(b -> b.getBatteryType().getVolume())
@@ -36,7 +37,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter((slot, used) -> used > slot.getCapacity())
                 .penalize("Over capacity",
                         HardSoftScore.ONE_HARD,
-                        (slot, used) -> (int) (used - slot.getCapacity()));
+                        (slot, used) -> 1); // 🔥 FIX
     }
 
     // 🥉 Vältä open storagea
