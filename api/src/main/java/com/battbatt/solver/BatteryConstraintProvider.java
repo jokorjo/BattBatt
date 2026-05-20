@@ -11,13 +11,12 @@ public class BatteryConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 chemistryConstraint(factory),
                 criticalConstraint(factory),
-                otherConstraint(factory),
                 capacityConstraint(factory),
                 avoidOpenStorage(factory)
         };
     }
 
-    // 🥇 Kemia (NMC / LFP)
+    // 🥇 Kemia (NMC / LFP / OTHER)
     private Constraint chemistryConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
@@ -27,9 +26,9 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                     String storageChem = b.getStorageSlot().getStorage().getChemistry();
 
                     // ANY = sallittu fallback
-                    if ("ANY".equals(storageChem)) return false;
+                    if ("ANY".equalsIgnoreCase(storageChem)) return false;
 
-                    return !batteryChem.equals(storageChem);
+                    return !batteryChem.equalsIgnoreCase(storageChem);
                 })
                 .penalize("Wrong chemistry", HardSoftScore.ONE_HARD);
     }
@@ -40,30 +39,18 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> b.getStorageSlot() != null &&
                         b.getBatteryType() != null)
                 .filter(b -> {
-                    // 🔥 oletus: type kertoo critical
-                    if (!"CRITICAL".equalsIgnoreCase(b.getBatteryType().getType())) {
+                    String classification = b.getBatteryType().getClassification();
+
+                    // vain criticalit
+                    if (!"CRITICAL".equalsIgnoreCase(classification)) {
                         return false;
                     }
 
-                    return !b.getStorageSlot().getStorage().getStorageType().equals("PACK");
+                    String storageType = b.getStorageSlot().getStorage().getStorageType();
+
+                    return !"PACK".equalsIgnoreCase(storageType);
                 })
                 .penalize("Critical must go to PACK", HardSoftScore.ONE_HARD);
-    }
-
-    // 🥉 OTHER → vain PALLET
-    private Constraint otherConstraint(ConstraintFactory factory) {
-        return factory.from(Battery.class)
-                .filter(b -> b.getStorageSlot() != null &&
-                        b.getBatteryType() != null)
-                .filter(b -> {
-                    // 🔥 oletus: type kertoo OTHER
-                    if (!"OTHER".equalsIgnoreCase(b.getBatteryType().getType())) {
-                        return false;
-                    }
-
-                    return !b.getStorageSlot().getStorage().getStorageType().equals("PALLET");
-                })
-                .penalize("Other must go to PALLET", HardSoftScore.ONE_HARD);
     }
 
     // 🧱 Kapasiteetti
@@ -84,7 +71,8 @@ public class BatteryConstraintProvider implements ConstraintProvider {
     private Constraint avoidOpenStorage(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
-                        b.getStorageSlot().getStorage().getStorageType().equals("OPEN"))
+                        "OPEN".equalsIgnoreCase(
+                                b.getStorageSlot().getStorage().getStorageType()))
                 .penalize("Avoid open storage", HardSoftScore.ONE_SOFT);
     }
 }
