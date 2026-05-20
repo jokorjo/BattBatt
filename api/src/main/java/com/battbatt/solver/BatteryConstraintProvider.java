@@ -33,7 +33,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .groupBy(
                         Battery::getStorageSlot,
-                        ConstraintCollectors.sumDouble(b -> b.getBatteryType().getVolume()) // 🔥 FIX
+                        ConstraintCollectors.sum(b -> (int) b.getBatteryType().getVolume()) // 🔥 FIX
                 )
                 .filter((slot, used) -> used > slot.getCapacity())
                 .penalize("Over capacity",
