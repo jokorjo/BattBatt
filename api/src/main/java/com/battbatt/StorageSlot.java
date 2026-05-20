@@ -13,8 +13,8 @@ public class StorageSlot {
 
     private double capacity;  // 10 (pack), 1 (module), 100 (open)
 
-    // 🔥 TÄRKEÄ MUUTOS: cascade lisätty
-    @ManyToOne(cascade = CascadeType.ALL)
+    // 🔥 TÄRKEÄ MUUTOS: cascade poistettu
+    @ManyToOne
     private Storage storage;
 
     // ===== GETTERIT & SETTERIT =====
