@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import org.optaplanner.core.api.domain.entity.PlanningPin;
 
 @Entity
 @PlanningEntity
@@ -23,10 +24,14 @@ public class Battery {
     @ManyToOne
     private BatteryType batteryType;
 
-    // 🔥 OPTIMOITAVA (solver muuttaa tätä)
+    // 🔒 PINNED → solver EI saa siirtää jos true
+    @PlanningPin
+    private boolean pinned = false;
+
+    // 🔥 OPTIMOITAVA (solver muuttaa tätä vain jos pinned = false)
     @PlanningVariable(valueRangeProviderRefs = "slotRange")
     @ManyToOne
-    @JoinColumn(name = "storage_slot_id") // 🔥 selkeä FK
+    @JoinColumn(name = "storage_slot_id")
     @JsonIgnoreProperties("storage")
     private StorageSlot storageSlot;
 
@@ -66,5 +71,13 @@ public class Battery {
 
     public void setStorageSlot(StorageSlot storageSlot) {
         this.storageSlot = storageSlot;
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
     }
 }
