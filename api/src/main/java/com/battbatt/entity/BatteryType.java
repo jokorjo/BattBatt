@@ -10,9 +10,11 @@ public class BatteryType {
     private Long id;
 
     private String name;
-
     private String type;        // PACK / MODULE
     private String chemistry;   // NMC / LFP / OTHER
+
+    // 🔥 TÄRKEÄ LISÄYS
+    private String classification; // CRITICAL / STABLE
 
     private double length;
     private double width;
@@ -38,6 +40,10 @@ public class BatteryType {
 
     public String getChemistry() { return chemistry; }
     public void setChemistry(String chemistry) { this.chemistry = chemistry; }
+
+    // 🔥 TÄMÄ PUUTTUI → aiheutti errorin
+    public String getClassification() { return classification; }
+    public void setClassification(String classification) { this.classification = classification; }
 
     public double getLength() { return length; }
     public void setLength(double length) { this.length = length; }
