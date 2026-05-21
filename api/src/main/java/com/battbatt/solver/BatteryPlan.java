@@ -11,6 +11,9 @@ import java.util.List;
 @PlanningSolution
 public class BatteryPlan {
 
+    // 🔥 TÄRKEÄ (OptaPlanner tarvitsee)
+    public BatteryPlan() {}
+
     @PlanningEntityCollectionProperty
     private List<Battery> batteryList;
 
