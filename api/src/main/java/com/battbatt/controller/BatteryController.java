@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/batteries")
-@CrossOrigin // 🔥 helpottaa fronttia
+@CrossOrigin
 public class BatteryController {
 
     private final BatteryRepository repo;
@@ -20,10 +20,10 @@ public class BatteryController {
         this.repo = repo;
     }
 
-    // 🔹 Hae kaikki akut
+    // 🔹 Hae kaikki akut (FIXED)
     @GetMapping
     public List<Battery> getAll() {
-        return repo.findAll();
+        return repo.findAllWithType(); // 🔥 TÄRKEÄ
     }
 
     // 🔹 Lisää yksi akku
@@ -32,22 +32,22 @@ public class BatteryController {
         return repo.save(battery);
     }
 
-    // 🔹 Lisää monta akkua (🔥 demo super hyödyllinen)
+    // 🔹 Lisää monta akkua
     @PostMapping("/bulk")
     public List<Battery> createMany(@RequestBody List<Battery> batteries) {
         return repo.saveAll(batteries);
     }
 
-    // 🔹 Poista kaikki (reset demoa varten)
+    // 🔹 Poista kaikki
     @DeleteMapping
     public void deleteAll() {
         repo.deleteAll();
     }
 
-    // 🔥 UUSI: Varaston summary (kilot + määrä)
+    // 🔥 SUMMARY (FIXED myös tähän)
     @GetMapping("/summary")
     public List<StorageSummary> getSummary() {
-        return repo.findAll().stream()
+        return repo.findAllWithType().stream() // 🔥 TÄRKEÄ
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .collect(Collectors.groupingBy(
                         b -> b.getStorageSlot().getStorage().getName() + "|" +
