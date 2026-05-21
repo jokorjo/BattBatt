@@ -49,7 +49,7 @@ public class DataLoader {
 
                 // NMC
                 createBatteryType(batteryTypeRepo, "NMC Battery 1", "PACK", "NMC",
-                        2, 1.6, 0.5, 600, 700, 82, 30, 30, "CRITICAL");
+                        2, 1.6, 0.5, 600, 700, 82, 30, 30, "STABLE");
 
                 createBatteryType(batteryTypeRepo, "NMC Battery 2", "PACK", "NMC",
                         1, 0.5, 0.15, 120, 350, 13, 20, 20, "STABLE");
