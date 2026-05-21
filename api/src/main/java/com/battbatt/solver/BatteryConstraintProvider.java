@@ -10,7 +10,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[] {
                 chemistryConstraint(factory),
-                typeConstraint(factory),        // 🔥 LISÄTTY
+                typeConstraint(factory),
                 criticalConstraint(factory),
                 capacityConstraint(factory),
                 avoidOpenStorage(factory),
@@ -18,7 +18,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
         };
     }
 
-    // 🥇 Kemia (NMC / LFP / OTHER)
+    // 🥇 Kemia
     private Constraint chemistryConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
@@ -27,7 +27,6 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                     String batteryChem = b.getBatteryType().getChemistry();
                     String storageChem = b.getStorageSlot().getStorage().getChemistry();
 
-                    // ANY = sallittu fallback
                     if ("ANY".equalsIgnoreCase(storageChem)) return false;
 
                     return !batteryChem.equalsIgnoreCase(storageChem);
@@ -35,23 +34,21 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Wrong chemistry", HardSoftScore.ONE_HARD);
     }
 
-    // 🧱 PACK vs MODULE (🔥 TÄRKEIN LISÄYS)
+    // 🧱 PACK vs MODULE
     private Constraint typeConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
                         b.getBatteryType() != null)
                 .filter(b -> {
-                    String type = b.getBatteryType().getType(); // PACK / MODULE
+                    String type = b.getBatteryType().getType();
                     String storageType = b.getStorageSlot().getStorage().getStorageType();
 
-                    // PACK → PACK + OPEN + OVERFLOW sallittu
                     if ("PACK".equalsIgnoreCase(type)) {
                         return !(storageType.equalsIgnoreCase("PACK") ||
                                  storageType.equalsIgnoreCase("OPEN") ||
                                  storageType.equalsIgnoreCase("OVERFLOW"));
                     }
 
-                    // MODULE → PALLET + OPEN + OVERFLOW sallittu
                     if ("MODULE".equalsIgnoreCase(type)) {
                         return !(storageType.equalsIgnoreCase("PALLET") ||
                                  storageType.equalsIgnoreCase("OPEN") ||
@@ -69,7 +66,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> b.getStorageSlot() != null &&
                         b.getBatteryType() != null)
                 .filter(b -> {
-                    String classification = b.getBatteryType().getClassification();
+                    String classification = b.getClassification(); // 🔥 FIX
 
                     if (!"CRITICAL".equalsIgnoreCase(classification)) {
                         return false;
@@ -96,7 +93,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                         (slot, used) -> used - (int) slot.getCapacity());
     }
 
-    // ⚠️ OPEN → vältetään (soft)
+    // ⚠️ OPEN
     private Constraint avoidOpenStorage(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
@@ -105,12 +102,12 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Avoid open storage", HardSoftScore.ONE_SOFT);
     }
 
-    // 🚨 OVERFLOW → erittäin huono (🔥 KORJATTU)
+    // 🚨 OVERFLOW
     private Constraint avoidOverflow(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
                         "OVERFLOW".equalsIgnoreCase(
                                 b.getStorageSlot().getStorage().getStorageType()))
-                .penalize("Avoid overflow storage", HardSoftScore.ofSoft(20)); // 🔥 kovempi penalty
+                .penalize("Avoid overflow storage", HardSoftScore.ofSoft(20));
     }
 }
