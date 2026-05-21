@@ -1,8 +1,7 @@
 package com.battbatt.config;
 
 import com.battbatt.entity.*;
-import com.battbatt.repository.StorageRepository;
-import com.battbatt.repository.StorageSlotRepository;
+import com.battbatt.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,9 +9,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DataLoader {
 
-    @Bean
+@Bean
     CommandLineRunner loadData(StorageRepository storageRepo,
-                               StorageSlotRepository slotRepo) {
+                               StorageSlotRepository slotRepo,
+                               BatteryTypeRepository batteryTypeRepo) {
         return args -> {
 
             // 🔥 ESTÄ DUPLIKAATIT
@@ -40,6 +40,33 @@ public class DataLoader {
             createOverflowStorage(storageRepo, slotRepo, "Overflow NMC", "NMC");
             createOverflowStorage(storageRepo, slotRepo, "Overflow LFP", "LFP");
             createOverflowStorage(storageRepo, slotRepo, "Overflow Other", "ANY");
+            
+            // =========================
+            // 🔋 BATTERY TYPES
+            // =========================
+
+            if (batteryTypeRepo.count() == 0) {
+
+                // NMC
+                createBatteryType(batteryTypeRepo, "NMC Battery 1", "PACK", "NMC",
+                        2, 1.6, 0.5, 600, 700, 82, 30, 30, "CRITICAL");
+
+                createBatteryType(batteryTypeRepo, "NMC Battery 2", "PACK", "NMC",
+                        1, 0.5, 0.15, 120, 350, 13, 20, 20, "STABLE");
+
+                createBatteryType(batteryTypeRepo, "NMC Battery 3", "MODULE", "NMC",
+                        0.4, 0.2, 0.1, 12, 22, 1.3, 2, 2, "STABLE");
+
+                // LFP
+                createBatteryType(batteryTypeRepo, "LFP Battery 1", "PACK", "LFP",
+                        2, 1.6, 0.5, 600, 400, 60.5, 30, 30, "STABLE");
+
+                createBatteryType(batteryTypeRepo, "LFP Battery 2", "PACK", "LFP",
+                        1, 0.5, 0.15, 120, 350, 10, 20, 20, "STABLE");
+
+                createBatteryType(batteryTypeRepo, "LFP Battery 3", "MODULE", "LFP",
+                        0.4, 0.2, 0.1, 12, 22, 0.8, 2, 2, "STABLE");
+            }
         };
     }
 
@@ -124,5 +151,43 @@ public class DataLoader {
         slot.setCapacity(9999); // käytännössä rajaton
         slot.setStorage(storage);
         slotRepo.save(slot);
+    }
+// =========================
+    // BATTERY TYPE METHODS
+    // =========================
+
+    private void createBatteryType(BatteryTypeRepository repo,
+                                   String name,
+                                   String type,
+                                   String chemistry,
+                                   double length,
+                                   double width,
+                                   double height,
+                                   double weight,
+                                   int voltage,
+                                   double kwh,
+                                   int mechanical,
+                                   int preparation,
+                                   String classification) {
+
+        BatteryType bt = new BatteryType();
+        bt.setName(name);
+        bt.setType(type);
+        bt.setChemistry(chemistry);
+
+        bt.setLength(length);
+        bt.setWidth(width);
+        bt.setHeight(height);
+
+        bt.setWeight(weight);
+        bt.setVoltage(voltage);
+        bt.setKwh(kwh);
+
+        bt.setMechanicalTime(mechanical);
+        bt.setPreparationTime(preparation);
+
+        bt.setClassification(classification);
+
+        repo.save(bt);
     }
 }
