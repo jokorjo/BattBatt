@@ -13,7 +13,6 @@ public class BatteryType {
     private String type;        // PACK / MODULE
     private String chemistry;   // NMC / LFP / OTHER
 
-    // 🔥 TÄRKEÄ LISÄYS
     private String classification; // CRITICAL / STABLE
 
     private double length;
@@ -28,8 +27,8 @@ public class BatteryType {
     private int mechanicalTime;
     private int preparationTime;
 
-    // 🔥 SCALE FACTOR
-    private static final int SCALE = 1000;
+    // ❌ POISTA TÄMÄ (tärkeä!)
+    // private static final int SCALE = 1000;
 
     // ===== GETTERIT & SETTERIT =====
 
@@ -44,7 +43,6 @@ public class BatteryType {
     public String getChemistry() { return chemistry; }
     public void setChemistry(String chemistry) { this.chemistry = chemistry; }
 
-    // 🔥 TÄMÄ PUUTTUI → aiheutti errorin
     public String getClassification() { return classification; }
     public void setClassification(String classification) { this.classification = classification; }
 
@@ -77,12 +75,26 @@ public class BatteryType {
     public int getPreparationTime() { return preparationTime; }
     public void setPreparationTime(int preparationTime) { this.preparationTime = preparationTime; }
 
+    // 🔥 TILAVUUS (oikea fysiikka)
     public double getVolume() {
         return length * width * height;
     }
-    
-        // 🔥 UUSI (EI PYÖRISTYSBUGIA)
+
+    // 🔥 KÄYTÄ SAMA SCALE KUIN StorageSlot
     public int getScaledVolume() {
-        return (int) Math.round(getVolume() * SCALE);
+        return (int) Math.round(getVolume() * StorageSlot.SCALE);
+    }
+
+    // 🔥 DEBUG (suosittelen)
+    @Override
+    public String toString() {
+        return "BatteryType{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", chemistry='" + chemistry + '\'' +
+                ", volume=" + getVolume() +
+                ", scaled=" + getScaledVolume() +
+                '}';
     }
 }
