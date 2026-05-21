@@ -47,7 +47,7 @@ public class DataLoader {
 
             if (batteryTypeRepo.count() == 0) {
 
-                // NMC
+                // NMC // "name" "type" chemistry" "length meters" "width meters" "height meters" "weight" "voltage" "kwh" "mechanical time in minutes" "preparation time minutes"
                 createBatteryType(batteryTypeRepo, "NMC Battery 1", "PACK", "NMC",
                         2, 1.6, 0.5, 600, 700, 82, 30, 30, "STABLE");
 
