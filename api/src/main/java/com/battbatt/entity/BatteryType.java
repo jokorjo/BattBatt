@@ -28,6 +28,9 @@ public class BatteryType {
     private int mechanicalTime;
     private int preparationTime;
 
+    // 🔥 SCALE FACTOR
+    private static final int SCALE = 1000;
+
     // ===== GETTERIT & SETTERIT =====
 
     public Long getId() { return id; }
@@ -76,5 +79,10 @@ public class BatteryType {
 
     public double getVolume() {
         return length * width * height;
+    }
+    
+        // 🔥 UUSI (EI PYÖRISTYSBUGIA)
+    public int getScaledVolume() {
+        return (int) Math.round(getVolume() * SCALE);
     }
 }
