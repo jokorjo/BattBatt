@@ -14,6 +14,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 typeConstraint(factory),
                 criticalConstraint(factory),
                 capacityConstraint(factory),
+                preferCorrectChemistry(factory), // 🔥 UUSI
                 avoidOpenStorage(factory),
                 avoidOverflow(factory)
         };
@@ -26,6 +27,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Battery must have slot", HardSoftScore.ONE_HARD);
     }
 
+    // 🔥 KEMIA (HARD)
     private Constraint chemistryConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
@@ -34,11 +36,13 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                     String storageChem = b.getStorageSlot().getStorage().getChemistry();
 
                     if ("ANY".equalsIgnoreCase(storageChem)) return false;
+
                     return !batteryChem.equalsIgnoreCase(storageChem);
                 })
-                .penalize("Wrong chemistry", HardSoftScore.ONE_HARD);
+                .penalize("Wrong chemistry", HardSoftScore.ofHard(100)); // 🔥 vahvempi
     }
 
+    // 🧱 TYPE (HARD)
     private Constraint typeConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
@@ -48,35 +52,32 @@ public class BatteryConstraintProvider implements ConstraintProvider {
 
                     if ("PACK".equalsIgnoreCase(type)) {
                         return !(storageType.equalsIgnoreCase("PACK")
-                                || storageType.equalsIgnoreCase("OPEN")
-                                || storageType.equalsIgnoreCase("OVERFLOW"));
+                                || storageType.equalsIgnoreCase("OPEN"));
                     }
 
                     if ("MODULE".equalsIgnoreCase(type)) {
                         return !(storageType.equalsIgnoreCase("PALLET")
-                                || storageType.equalsIgnoreCase("OPEN")
-                                || storageType.equalsIgnoreCase("OVERFLOW"));
+                                || storageType.equalsIgnoreCase("OPEN"));
                     }
 
                     return false;
                 })
-                .penalize("Wrong storage type", HardSoftScore.ONE_HARD);
+                .penalize("Wrong storage type", HardSoftScore.ofHard(100));
     }
 
+    // 🥈 CRITICAL
     private Constraint criticalConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .filter(b -> {
-                    if (!"CRITICAL".equalsIgnoreCase(b.getClassification())) {
-                        return false;
-                    }
-                    String storageType = b.getStorageSlot().getStorage().getStorageType();
-                    return !"PACK".equalsIgnoreCase(storageType);
+                    if (!"CRITICAL".equalsIgnoreCase(b.getClassification())) return false;
+                    return !"PACK".equalsIgnoreCase(
+                            b.getStorageSlot().getStorage().getStorageType());
                 })
-                .penalize("Critical must go to PACK", HardSoftScore.ONE_HARD);
+                .penalize("Critical must go to PACK", HardSoftScore.ofHard(100));
     }
 
-    // 🔥 TÄRKEIN FIX (SCALED!)
+    // 🔥 KAPASITEETTI (SCALED)
     private Constraint capacityConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
@@ -86,23 +87,38 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 )
                 .filter((slot, used) -> used > slot.getScaledCapacity())
                 .penalize("Over capacity",
-                        HardSoftScore.ONE_HARD,
+                        HardSoftScore.ofHard(100),
                         (slot, used) -> used - slot.getScaledCapacity());
     }
 
+    // 🔥 PEHMEÄ OHJAUS OIKEAAN KEMIAAN
+    private Constraint preferCorrectChemistry(ConstraintFactory factory) {
+        return factory.from(Battery.class)
+                .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
+                .filter(b -> {
+                    String batteryChem = b.getBatteryType().getChemistry();
+                    String storageChem = b.getStorageSlot().getStorage().getChemistry();
+
+                    return storageChem.equalsIgnoreCase(batteryChem);
+                })
+                .reward("Prefer correct chemistry", HardSoftScore.ONE_SOFT);
+    }
+
+    // ⚠️ OPEN
     private Constraint avoidOpenStorage(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
                         "OPEN".equalsIgnoreCase(
                                 b.getStorageSlot().getStorage().getStorageType()))
-                .penalize("Avoid open storage", HardSoftScore.ONE_SOFT);
+                .penalize("Avoid open storage", HardSoftScore.ofSoft(5));
     }
 
+    // 🚨 OVERFLOW
     private Constraint avoidOverflow(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
                         "OVERFLOW".equalsIgnoreCase(
                                 b.getStorageSlot().getStorage().getStorageType()))
-                .penalize("Avoid overflow storage", HardSoftScore.ofSoft(20));
+                .penalize("Avoid overflow storage", HardSoftScore.ofSoft(50));
     }
 }
