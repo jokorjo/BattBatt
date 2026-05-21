@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
-    <solutionClass>com.battbatt.model.BatteryProcessing</solutionClass>
-    <entityClass>com.battbatt.model.Battery</entityClass>
+
+    <solutionClass>com.battbatt.solver.BatteryPlan</solutionClass>
+    <entityClass>com.battbatt.entity.Battery</entityClass>
 
     <scoreDirectorFactory>
-        <easyScoreCalculatorClass>com.battbatt.solver.BatteryProcessingSolver</easyScoreCalculatorClass>
+        <constraintProviderClass>
+            com.battbatt.solver.BatteryConstraintProvider
+        </constraintProviderClass>
     </scoreDirectorFactory>
 
     <termination>
-        <secondsSpentLimit>10</secondsSpentLimit>
+        <secondsSpentLimit>5</secondsSpentLimit>
     </termination>
+
 </solver>
