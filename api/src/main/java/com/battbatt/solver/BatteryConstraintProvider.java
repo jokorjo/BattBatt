@@ -9,6 +9,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[] {
+                mustHaveSlot(factory), // 🔥 TÄRKEIN LISÄYS
                 chemistryConstraint(factory),
                 typeConstraint(factory),
                 criticalConstraint(factory),
@@ -16,6 +17,13 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 avoidOpenStorage(factory),
                 avoidOverflow(factory)
         };
+    }
+
+    // ❗ EI SAA OLLA NULL SLOT
+    private Constraint mustHaveSlot(ConstraintFactory factory) {
+        return factory.from(Battery.class)
+                .filter(b -> b.getStorageSlot() == null)
+                .penalize("Battery must have slot", HardSoftScore.ONE_HARD);
     }
 
     // 🥇 Kemia
@@ -66,7 +74,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> b.getStorageSlot() != null &&
                         b.getBatteryType() != null)
                 .filter(b -> {
-                    String classification = b.getClassification(); // 🔥 FIX
+                    String classification = b.getClassification();
 
                     if (!"CRITICAL".equalsIgnoreCase(classification)) {
                         return false;
@@ -79,18 +87,18 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Critical must go to PACK", HardSoftScore.ONE_HARD);
     }
 
-    // 🧱 Kapasiteetti
+    // 🧱 Kapasiteetti (FIXED DOUBLE)
     private Constraint capacityConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .groupBy(
                         Battery::getStorageSlot,
-                        ConstraintCollectors.sum(b -> (int) b.getBatteryType().getVolume())
+                        ConstraintCollectors.sumDouble(b -> b.getBatteryType().getVolume())
                 )
                 .filter((slot, used) -> used > slot.getCapacity())
                 .penalize("Over capacity",
                         HardSoftScore.ONE_HARD,
-                        (slot, used) -> used - (int) slot.getCapacity());
+                        (slot, used) -> (int) (used - slot.getCapacity()));
     }
 
     // ⚠️ OPEN
