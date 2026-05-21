@@ -11,8 +11,13 @@ import java.util.List;
 @PlanningSolution
 public class BatteryPlan {
 
-    // 🔥 TÄRKEÄ (OptaPlanner tarvitsee)
     public BatteryPlan() {}
+
+    // 🔥 UUSI (TÄRKEÄ)
+    public BatteryPlan(List<Battery> batteryList, List<StorageSlot> slotList) {
+        this.batteryList = batteryList;
+        this.slotList = slotList;
+    }
 
     @PlanningEntityCollectionProperty
     private List<Battery> batteryList;
@@ -24,27 +29,12 @@ public class BatteryPlan {
     @PlanningScore
     private HardSoftScore score;
 
-    public List<Battery> getBatteryList() {
-        return batteryList;
-    }
+    public List<Battery> getBatteryList() { return batteryList; }
+    public void setBatteryList(List<Battery> batteryList) { this.batteryList = batteryList; }
 
-    public void setBatteryList(List<Battery> batteryList) {
-        this.batteryList = batteryList;
-    }
+    public List<StorageSlot> getSlotList() { return slotList; }
+    public void setSlotList(List<StorageSlot> slotList) { this.slotList = slotList; }
 
-    public List<StorageSlot> getSlotList() {
-        return slotList;
-    }
-
-    public void setSlotList(List<StorageSlot> slotList) {
-        this.slotList = slotList;
-    }
-
-    public HardSoftScore getScore() {
-        return score;
-    }
-
-    public void setScore(HardSoftScore score) {
-        this.score = score;
-    }
+    public HardSoftScore getScore() { return score; }
+    public void setScore(HardSoftScore score) { this.score = score; }
 }
