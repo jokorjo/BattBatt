@@ -11,12 +11,16 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class OptaPlannerService {
+public class StorageOptimizationService {
+
+    private final SolverFactory<BatteryPlan> solverFactory;
+
+    public StorageOptimizationService() {
+        this.solverFactory =
+                SolverFactory.createFromXmlResource("solverConfig.xml");
+    }
 
     public BatteryPlan solve(List<Battery> batteries, List<StorageSlot> slots) {
-
-        SolverFactory<BatteryPlan> solverFactory =
-                SolverFactory.createFromXmlResource("solverConfig.xml");
 
         Solver<BatteryPlan> solver = solverFactory.buildSolver();
 
