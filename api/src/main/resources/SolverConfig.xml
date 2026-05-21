@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
 
+    <!-- 🔥 Planning solution -->
     <solutionClass>com.battbatt.solver.BatteryPlan</solutionClass>
+
+    <!-- 🔥 Planning entity -->
     <entityClass>com.battbatt.entity.Battery</entityClass>
 
     <scoreDirectorFactory>
@@ -10,6 +13,7 @@
         </constraintProviderClass>
     </scoreDirectorFactory>
 
+    <!-- 🔥 vähän pidempi aika = parempi ratkaisu -->
     <termination>
         <secondsSpentLimit>5</secondsSpentLimit>
     </termination>
