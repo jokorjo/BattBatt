@@ -16,15 +16,17 @@ public class Battery {
 
     private String barcode;
 
-    // 🔥 UUSI (oikea paikka)
-    private String classification = "STABLE"; // default
+    // 🔥 Pakollinen kenttä (ei null DB:ssä)
+    @Column(nullable = false)
+    private String classification = "STABLE";
 
     @ManyToOne
     private BatteryType batteryType;
 
-    // 🔥 OPTIMOITAVA
+    // 🔥 OPTIMOITAVA (solver muuttaa tätä)
     @PlanningVariable(valueRangeProviderRefs = "slotRange")
     @ManyToOne
+    @JoinColumn(name = "storage_slot_id") // 🔥 selkeä FK
     @JsonIgnoreProperties("storage")
     private StorageSlot storageSlot;
 
