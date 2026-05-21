@@ -10,16 +10,17 @@ public class StorageSlot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;      // A, B, C, A1...
+    private String name; // A, B, C, A1...
 
+    // 🔥 TÄRKEÄ: capacity on fyysinen tilavuus (m³ tms.)
     private double capacity;
 
     @ManyToOne
-    @JsonIgnoreProperties("slots") // 🔥 estää loopin Storage → slots → storage
+    @JsonIgnoreProperties("slots")
     private Storage storage;
 
-        // 🔥 SCALE FACTOR
-    private static final int SCALE = 1000;
+    // 🔥 SCALE FACTOR (yhtenäinen koko sovelluksessa)
+    public static final int SCALE = 1000;
 
     // ===== GETTERIT & SETTERIT =====
 
@@ -33,9 +34,21 @@ public class StorageSlot {
 
     public Storage getStorage() { return storage; }
     public void setStorage(Storage storage) { this.storage = storage; }
-    
-     // 🔥 UUSI (EI PYÖRISTYSBUGIA)
+
+    // 🔥 KÄYTÄTÄÄN SOLVERISSA (EI PYÖRISTYSBUGIA)
     public int getScaledCapacity() {
         return (int) Math.round(capacity * SCALE);
+    }
+
+    // 🔥 DEBUG HELPPONA (erittäin hyödyllinen)
+    @Override
+    public String toString() {
+        return "Slot{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", capacity=" + capacity +
+                ", scaled=" + getScaledCapacity() +
+                ", storage=" + (storage != null ? storage.getName() : "null") +
+                '}';
     }
 }
