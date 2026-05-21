@@ -9,7 +9,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[] {
-                mustHaveSlot(factory), // 🔥 TÄRKEIN LISÄYS
+                mustHaveSlot(factory),
                 chemistryConstraint(factory),
                 typeConstraint(factory),
                 criticalConstraint(factory),
@@ -19,48 +19,43 @@ public class BatteryConstraintProvider implements ConstraintProvider {
         };
     }
 
-    // ❗ EI SAA OLLA NULL SLOT
+    // ❗ EI NULL SLOT
     private Constraint mustHaveSlot(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() == null)
                 .penalize("Battery must have slot", HardSoftScore.ONE_HARD);
     }
 
-    // 🥇 Kemia
     private Constraint chemistryConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
-                .filter(b -> b.getStorageSlot() != null &&
-                        b.getBatteryType() != null)
+                .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .filter(b -> {
                     String batteryChem = b.getBatteryType().getChemistry();
                     String storageChem = b.getStorageSlot().getStorage().getChemistry();
 
                     if ("ANY".equalsIgnoreCase(storageChem)) return false;
-
                     return !batteryChem.equalsIgnoreCase(storageChem);
                 })
                 .penalize("Wrong chemistry", HardSoftScore.ONE_HARD);
     }
 
-    // 🧱 PACK vs MODULE
     private Constraint typeConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
-                .filter(b -> b.getStorageSlot() != null &&
-                        b.getBatteryType() != null)
+                .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .filter(b -> {
                     String type = b.getBatteryType().getType();
                     String storageType = b.getStorageSlot().getStorage().getStorageType();
 
                     if ("PACK".equalsIgnoreCase(type)) {
-                        return !(storageType.equalsIgnoreCase("PACK") ||
-                                 storageType.equalsIgnoreCase("OPEN") ||
-                                 storageType.equalsIgnoreCase("OVERFLOW"));
+                        return !(storageType.equalsIgnoreCase("PACK")
+                                || storageType.equalsIgnoreCase("OPEN")
+                                || storageType.equalsIgnoreCase("OVERFLOW"));
                     }
 
                     if ("MODULE".equalsIgnoreCase(type)) {
-                        return !(storageType.equalsIgnoreCase("PALLET") ||
-                                 storageType.equalsIgnoreCase("OPEN") ||
-                                 storageType.equalsIgnoreCase("OVERFLOW"));
+                        return !(storageType.equalsIgnoreCase("PALLET")
+                                || storageType.equalsIgnoreCase("OPEN")
+                                || storageType.equalsIgnoreCase("OVERFLOW"));
                     }
 
                     return false;
@@ -68,40 +63,33 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Wrong storage type", HardSoftScore.ONE_HARD);
     }
 
-    // 🥈 CRITICAL → vain PACK
     private Constraint criticalConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
-                .filter(b -> b.getStorageSlot() != null &&
-                        b.getBatteryType() != null)
+                .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .filter(b -> {
-                    String classification = b.getClassification();
-
-                    if (!"CRITICAL".equalsIgnoreCase(classification)) {
+                    if (!"CRITICAL".equalsIgnoreCase(b.getClassification())) {
                         return false;
                     }
-
                     String storageType = b.getStorageSlot().getStorage().getStorageType();
-
                     return !"PACK".equalsIgnoreCase(storageType);
                 })
                 .penalize("Critical must go to PACK", HardSoftScore.ONE_HARD);
     }
 
-    // 🧱 Kapasiteetti (FIXED DOUBLE)
+    // 🔥 TÄRKEIN FIX (SCALED!)
     private Constraint capacityConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .groupBy(
                         Battery::getStorageSlot,
-                        ConstraintCollectors.sumDouble(b -> b.getBatteryType().getVolume())
+                        ConstraintCollectors.sum(b -> b.getBatteryType().getScaledVolume())
                 )
-                .filter((slot, used) -> used > slot.getCapacity())
+                .filter((slot, used) -> used > slot.getScaledCapacity())
                 .penalize("Over capacity",
                         HardSoftScore.ONE_HARD,
-                        (slot, used) -> (int) (used - slot.getCapacity()));
+                        (slot, used) -> used - slot.getScaledCapacity());
     }
 
-    // ⚠️ OPEN
     private Constraint avoidOpenStorage(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
@@ -110,7 +98,6 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Avoid open storage", HardSoftScore.ONE_SOFT);
     }
 
-    // 🚨 OVERFLOW
     private Constraint avoidOverflow(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
