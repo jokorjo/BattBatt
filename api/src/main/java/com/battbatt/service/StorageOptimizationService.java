@@ -2,7 +2,7 @@ package com.battbatt.service;
 
 import com.battbatt.entity.Battery;
 import com.battbatt.entity.StorageSlot;
-import com.battbatt.solver.BatteryAssignmentSolution;
+import com.battbatt.solver.BatteryPlan;
 
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
@@ -13,16 +13,16 @@ import java.util.List;
 @Service
 public class OptaPlannerService {
 
-    public BatteryAssignmentSolution solve(List<Battery> batteries, List<StorageSlot> slots) {
+    public BatteryPlan solve(List<Battery> batteries, List<StorageSlot> slots) {
 
-        SolverFactory<BatteryAssignmentSolution> solverFactory =
+        SolverFactory<BatteryPlan> solverFactory =
                 SolverFactory.createFromXmlResource("solverConfig.xml");
 
-        Solver<BatteryAssignmentSolution> solver = solverFactory.buildSolver();
+        Solver<BatteryPlan> solver = solverFactory.buildSolver();
 
-        BatteryAssignmentSolution problem = new BatteryAssignmentSolution();
+        BatteryPlan problem = new BatteryPlan();
         problem.setBatteryList(batteries);
-        problem.setStorageSlotList(slots);
+        problem.setSlotList(slots);
 
         return solver.solve(problem);
     }
