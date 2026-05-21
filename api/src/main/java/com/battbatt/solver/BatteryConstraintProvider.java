@@ -110,7 +110,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> b.getStorageSlot() != null &&
                         "OPEN".equalsIgnoreCase(
                                 b.getStorageSlot().getStorage().getStorageType()))
-                .penalize("Avoid open storage", HardSoftScore.ofSoft(5));
+                .penalize("Avoid open storage", HardSoftScore.ofSoft(10));
     }
 
     // 🚨 OVERFLOW
@@ -119,6 +119,19 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .filter(b -> b.getStorageSlot() != null &&
                         "OVERFLOW".equalsIgnoreCase(
                                 b.getStorageSlot().getStorage().getStorageType()))
-                .penalize("Avoid overflow storage", HardSoftScore.ofSoft(50));
+                .penalize("Avoid overflow storage", HardSoftScore.ofSoft(100));
     }
+    // Ranking storage pack/pallet -> open -> overflow
+    private Constraint preferIdealStorage(ConstraintFactory factory) {
+    return factory.from(Battery.class)
+            .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
+            .filter(b -> {
+                String type = b.getBatteryType().getType();
+                String storageType = b.getStorageSlot().getStorage().getStorageType();
+
+                return (type.equalsIgnoreCase("PACK") && storageType.equalsIgnoreCase("PACK"))
+                    || (type.equalsIgnoreCase("MODULE") && storageType.equalsIgnoreCase("PALLET"));
+            })
+            .reward("Ideal storage", HardSoftScore.ofSoft(10));
+}
 }
