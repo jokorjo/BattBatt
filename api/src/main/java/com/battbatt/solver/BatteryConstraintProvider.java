@@ -49,7 +49,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Wrong chemistry", HardSoftScore.ofHard(100));
     }
 
-    // 🧱 TYPE (HARD)
+    // 🧱 TYPE (HARD) ✅ FIX: OVERFLOW sallittu
     private Constraint typeConstraint(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
@@ -59,12 +59,14 @@ public class BatteryConstraintProvider implements ConstraintProvider {
 
                     if ("PACK".equalsIgnoreCase(type)) {
                         return !(storageType.equalsIgnoreCase("PACK")
-                                || storageType.equalsIgnoreCase("OPEN"));
+                                || storageType.equalsIgnoreCase("OPEN")
+                                || storageType.equalsIgnoreCase("OVERFLOW")); // ✅ LISÄTTY
                     }
 
                     if ("MODULE".equalsIgnoreCase(type)) {
                         return !(storageType.equalsIgnoreCase("PALLET")
-                                || storageType.equalsIgnoreCase("OPEN"));
+                                || storageType.equalsIgnoreCase("OPEN")
+                                || storageType.equalsIgnoreCase("OVERFLOW")); // ✅ LISÄTTY
                     }
 
                     return false;
@@ -113,7 +115,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .reward("Ideal storage", HardSoftScore.ofSoft(20));
     }
 
-    // 🔥 SUOSI OIKEAA KEMIAA (ANY vs oikea)
+    // 🔥 SUOSI OIKEAA KEMIAA
     private Constraint preferCorrectChemistry(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
@@ -141,7 +143,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                         (storage, slotCount) -> slotCount - 1);
     }
 
-    // ⚠️ OPEN (fallback)
+    // ⚠️ OPEN
     private Constraint avoidOpenStorage(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
@@ -150,7 +152,7 @@ public class BatteryConstraintProvider implements ConstraintProvider {
                 .penalize("Avoid open storage", HardSoftScore.ofSoft(15));
     }
 
-    // 🚨 OVERFLOW (viimeinen vaihtoehto)
+    // 🚨 OVERFLOW
     private Constraint avoidOverflow(ConstraintFactory factory) {
         return factory.from(Battery.class)
                 .filter(b -> b.getStorageSlot() != null &&
