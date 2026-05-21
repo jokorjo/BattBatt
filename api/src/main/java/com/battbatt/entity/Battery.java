@@ -16,14 +16,16 @@ public class Battery {
 
     private String barcode;
 
+    // 🔥 UUSI (oikea paikka)
+    private String classification = "STABLE"; // default
+
     @ManyToOne
     private BatteryType batteryType;
 
     // 🔥 OPTIMOITAVA
     @PlanningVariable(valueRangeProviderRefs = "slotRange")
     @ManyToOne
-    @JsonIgnoreProperties("storage") 
-    // 🔥 estää loopin: Battery → Slot → Storage → Slot → ...
+    @JsonIgnoreProperties("storage")
     private StorageSlot storageSlot;
 
     // ===== GETTERIT & SETTERIT =====
@@ -38,6 +40,14 @@ public class Battery {
 
     public void setBarcode(String barcode) {
         this.barcode = barcode;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
     }
 
     public BatteryType getBatteryType() {
