@@ -18,6 +18,9 @@ public class StorageSlot {
     @JsonIgnoreProperties("slots") // 🔥 estää loopin Storage → slots → storage
     private Storage storage;
 
+        // 🔥 SCALE FACTOR
+    private static final int SCALE = 1000;
+
     // ===== GETTERIT & SETTERIT =====
 
     public Long getId() { return id; }
@@ -30,4 +33,9 @@ public class StorageSlot {
 
     public Storage getStorage() { return storage; }
     public void setStorage(Storage storage) { this.storage = storage; }
+    
+     // 🔥 UUSI (EI PYÖRISTYSBUGIA)
+    public int getScaledCapacity() {
+        return (int) Math.round(capacity * SCALE);
+    }
 }
