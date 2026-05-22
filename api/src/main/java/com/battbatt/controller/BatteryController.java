@@ -103,4 +103,10 @@ public class BatteryController {
                 })
                 .toList();
     }
+    
+    // 🔹 TEST endpoint
+@GetMapping("/test")
+public String test() {
+    return "OK";
+    }
 }
