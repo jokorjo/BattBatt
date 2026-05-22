@@ -1,8 +1,11 @@
 package com.battbatt.controller;
 
 import com.battbatt.entity.Battery;
+import com.battbatt.entity.BatteryType;
 import com.battbatt.repository.BatteryRepository;
 import com.battbatt.dto.StorageSummary;
+
+import jakarta.persistence.EntityManager;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -15,27 +18,56 @@ import java.util.stream.Collectors;
 public class BatteryController {
 
     private final BatteryRepository repo;
+    private final EntityManager entityManager;
 
-    public BatteryController(BatteryRepository repo) {
+    public BatteryController(BatteryRepository repo, EntityManager entityManager) {
         this.repo = repo;
+        this.entityManager = entityManager;
     }
 
-    // 🔹 Hae kaikki akut (FIXED)
+    // 🔹 Hae kaikki akut
     @GetMapping
     public List<Battery> getAll() {
-        return repo.findAllWithType(); // 🔥 TÄRKEÄ
+        return repo.findAllWithType(); // 🔥 oikein
     }
 
-    // 🔹 Lisää yksi akku
+    // 🔹 Lisää yksi akku (FIXED)
     @PostMapping
     public Battery create(@RequestBody Battery battery) {
+
+        if (battery.getBatteryType() != null && battery.getBatteryType().getId() != null) {
+
+            BatteryType realType = entityManager.find(
+                    BatteryType.class,
+                    battery.getBatteryType().getId()
+            );
+
+            battery.setBatteryType(realType);
+        }
+
         return repo.save(battery);
     }
 
-    // 🔹 Lisää monta akkua
+    // 🔹 Lisää monta akkua (FIXED)
     @PostMapping("/bulk")
     public List<Battery> createMany(@RequestBody List<Battery> batteries) {
-        return repo.saveAll(batteries);
+
+        return repo.saveAll(
+                batteries.stream().map(b -> {
+
+                    if (b.getBatteryType() != null && b.getBatteryType().getId() != null) {
+
+                        BatteryType realType = entityManager.find(
+                                BatteryType.class,
+                                b.getBatteryType().getId()
+                        );
+
+                        b.setBatteryType(realType);
+                    }
+
+                    return b;
+                }).toList()
+        );
     }
 
     // 🔹 Poista kaikki
@@ -44,10 +76,10 @@ public class BatteryController {
         repo.deleteAll();
     }
 
-    // 🔥 SUMMARY (FIXED myös tähän)
+    // 🔥 SUMMARY
     @GetMapping("/summary")
     public List<StorageSummary> getSummary() {
-        return repo.findAllWithType().stream() // 🔥 TÄRKEÄ
+        return repo.findAllWithType().stream()
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .collect(Collectors.groupingBy(
                         b -> b.getStorageSlot().getStorage().getName() + "|" +
