@@ -25,13 +25,19 @@ public class BatteryController {
         this.entityManager = entityManager;
     }
 
-    // 🔹 Hae kaikki akut
-    @GetMapping
-    public List<Battery> getAll("/") {
-        return repo.findAllWithType(); // 🔥 oikein
+    // 🔹 TEST endpoint
+    @GetMapping("/test")
+    public String test() {
+        return "OK";
     }
 
-    // 🔹 Lisää yksi akku (FIXED)
+    // 🔹 HAE KAIKKI AKUT (🔥 FIX)
+    @GetMapping
+    public List<Battery> getAll() {
+        return repo.findAllWithType();
+    }
+
+    // 🔹 LISÄÄ YKSI AKKU (🔥 FIX)
     @PostMapping
     public Battery create(@RequestBody Battery battery) {
 
@@ -48,7 +54,7 @@ public class BatteryController {
         return repo.save(battery);
     }
 
-    // 🔹 Lisää monta akkua (FIXED)
+    // 🔹 BULK LISÄYS (🔥 FIX)
     @PostMapping("/bulk")
     public List<Battery> createMany(@RequestBody List<Battery> batteries) {
 
@@ -70,13 +76,13 @@ public class BatteryController {
         );
     }
 
-    // 🔹 Poista kaikki
+    // 🔹 DELETE ALL
     @DeleteMapping
     public void deleteAll() {
         repo.deleteAll();
     }
 
-    // 🔥 SUMMARY
+    // 🔹 SUMMARY
     @GetMapping("/summary")
     public List<StorageSummary> getSummary() {
         return repo.findAllWithType().stream()
@@ -102,11 +108,5 @@ public class BatteryController {
                     return new StorageSummary(storage, chemistry, totalWeight, count);
                 })
                 .toList();
-    }
-    
-    // 🔹 TEST endpoint
-@GetMapping("/test")
-public String test() {
-    return "OK";
     }
 }
