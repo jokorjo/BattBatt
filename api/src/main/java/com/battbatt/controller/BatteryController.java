@@ -27,7 +27,7 @@ public class BatteryController {
 
     // 🔹 Hae kaikki akut
     @GetMapping
-    public List<Battery> getAll() {
+    public List<Battery> getAll("/") {
         return repo.findAllWithType(); // 🔥 oikein
     }
 
