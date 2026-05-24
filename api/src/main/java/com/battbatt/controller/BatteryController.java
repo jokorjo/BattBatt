@@ -32,7 +32,7 @@ public class BatteryController {
     }
 
     // 🔹 HAE KAIKKI AKUT (🔥 FIX)
-    @GetMapping
+    @GetMapping({"", "/"})
     public List<Battery> getAll() {
         return repo.findAllWithType();
     }
