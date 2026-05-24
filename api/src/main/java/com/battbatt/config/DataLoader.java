@@ -15,10 +15,8 @@ public class DataLoader {
                                BatteryTypeRepository batteryTypeRepo) {
         return args -> {
 
-            // 🔥 ESTÄ DUPLIKAATIT
-            if (storageRepo.count() > 0) {
-                return;
-            }
+            // 🔥 STORAGE seed
+            if (storageRepo.count() == 0) {
 
             // 🔹 NMC
             createPackStorage(storageRepo, slotRepo, "NMC Pack", "NMC");
@@ -40,6 +38,7 @@ public class DataLoader {
             createOverflowStorage(storageRepo, slotRepo, "Overflow NMC", "NMC");
             createOverflowStorage(storageRepo, slotRepo, "Overflow LFP", "LFP");
             createOverflowStorage(storageRepo, slotRepo, "Overflow Other", "ANY");
+            }
             
             // =========================
             // 🔋 BATTERY TYPES
@@ -143,7 +142,7 @@ public class DataLoader {
         Storage storage = new Storage();
         storage.setName(name);
         storage.setChemistry(chemistry);
-        storage.setStorageType("OPEN"); // 🔥 tärkeä: sama tyyppi kuin open
+        storage.setStorageType("OVERFLOW"); // 🔥 tärkeä: sama tyyppi kuin open
         storage = storageRepo.save(storage);
 
         StorageSlot slot = new StorageSlot();
