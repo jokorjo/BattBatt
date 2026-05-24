@@ -81,9 +81,11 @@ public class BatteryType {
     }
 
     // 🔥 KÄYTÄ SAMA SCALE KUIN StorageSlot
-    public int getScaledVolume() {
-        return (int) Math.round(getVolume() * StorageSlot.SCALE);
-    }
+   private static final int SCALE = 1000;
+
+public int getScaledVolume() {
+    return (int) Math.round(getVolume() * SCALE);
+}
 
     // 🔥 DEBUG (suosittelen)
     @Override
