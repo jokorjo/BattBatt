@@ -22,8 +22,11 @@ public class StorageOptimizationService {
 
     public BatteryPlan solve(List<Battery> batteries, List<StorageSlot> slots) {
 
-        // 🔥 1. INITIAL ASSIGNMENT (TÄRKEIN)
+        // 🔥 1. INITIAL ASSIGNMENT (vain uusille!)
         for (Battery b : batteries) {
+
+            // 🔒 SKIP jos jo lukittu
+            if (b.isPinned()) continue;
 
             if (b.getBatteryType() == null) continue;
 
@@ -49,7 +52,7 @@ public class StorageOptimizationService {
                 }
             }
 
-            // 🔥 fallback (estää nullit)
+            // fallback
             if (b.getStorageSlot() == null && !slots.isEmpty()) {
                 b.setStorageSlot(slots.get(0));
             }
@@ -61,6 +64,15 @@ public class StorageOptimizationService {
         // 🔥 3. SOLVER
         Solver<BatteryPlan> solver = solverFactory.buildSolver();
 
-        return solver.solve(problem);
+        BatteryPlan solution = solver.solve(problem);
+
+        // 🔥 4. PIN kaikki uudet (TÄRKEIN)
+        solution.getBatteryList().forEach(b -> {
+            if (!b.isPinned()) {
+                b.setPinned(true);
+            }
+        });
+
+        return solution;
     }
 }
