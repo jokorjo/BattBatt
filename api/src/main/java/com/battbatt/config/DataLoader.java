@@ -232,6 +232,23 @@ public class DataLoader {
         slot.setStorage(s);
         slotRepo.save(slot);
     }
+     
+    private void createProcessingStorage(StorageRepository repo,
+                                         StorageSlotRepository slotRepo,
+                                         String name) {
+
+        Storage s = new Storage();
+        s.setName(name);
+        s.setChemistry("ANY");
+        s.setStorageType("PROCESSING");
+        s = repo.save(s);
+
+        StorageSlot slot = new StorageSlot();
+        slot.setName("P1");
+        slot.setCapacity(9999);
+        slot.setStorage(s);
+        slotRepo.save(slot);
+    }
 
     // =========================
     // BATTERY TYPE
