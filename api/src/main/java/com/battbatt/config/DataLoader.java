@@ -14,7 +14,8 @@ public class DataLoader {
     CommandLineRunner loadData(StorageRepository storageRepo,
                                StorageSlotRepository slotRepo,
                                BatteryTypeRepository batteryTypeRepo,
-                               DeviceRepository deviceRepo) {
+                               DeviceRepository deviceRepo,
+                               DeviceProfileRepository profileRepo) {
 
         return args -> {
 
@@ -83,85 +84,85 @@ public class DataLoader {
                 Device d4 = createDevice(deviceRepo, "ELM-5200-12");
 
                 // 🔴 TÄYTÄ NÄMÄ SUN ARVOILLA
-                createProfile(d1, 1, 5, 0);
-                createProfile(d1, 6, 10, 40);
-                createProfile(d1, 11, 20, 80);
-                createProfile(d1, 21, 30, 165);
-                createProfile(d1, 31, 42, 185);
-                createProfile(d1, 43, 60, 210);
-                createProfile(d1, 61, 72, 270);
-                createProfile(d1, 73, 90, 220);
-                createProfile(d1, 91, 100, 200);
-                createProfile(d1, 101, 130, 150);
-                createProfile(d1, 131, 142, 140);
-                createProfile(d1, 143, 200, 100);
-                createProfile(d1, 201, 260, 75);
-                createProfile(d1, 261, 300, 65);
-                createProfile(d1, 301, 400, 50);
-                createProfile(d1, 401, 500, 50);
-                createProfile(d1, 501, 600, 0);
-                createProfile(d1, 601, 700, 0);
-                createProfile(d1, 701, 800, 0);
+                createProfile(profileRepo, d1, 1, 5, 0);
+            createProfile(profileRepo, d1, 6, 10, 40);
+            createProfile(profileRepo, d1, 11, 20, 80);
+            createProfile(profileRepo, d1, 21, 30, 165);
+            createProfile(profileRepo, d1, 31, 42, 185);
+            createProfile(profileRepo, d1, 43, 60, 210);
+            createProfile(profileRepo, d1, 61, 72, 270);
+            createProfile(profileRepo, d1, 73, 90, 220);
+            createProfile(profileRepo, d1, 91, 100, 200);
+            createProfile(profileRepo, d1, 101, 130, 150);
+            createProfile(profileRepo, d1, 131, 142, 140);
+            createProfile(profileRepo, d1, 143, 200, 100);
+            createProfile(profileRepo, d1, 201, 260, 75);
+            createProfile(profileRepo, d1, 261, 300, 65);
+            createProfile(profileRepo, d1, 301, 400, 50);
+            createProfile(profileRepo, d1, 401, 500, 50);
+            createProfile(profileRepo, d1, 501, 600, 0);
+            createProfile(profileRepo, d1, 601, 700, 0);
+            createProfile(profileRepo, d1, 701, 800, 0);
 
-                createProfile(d2, 1, 5, 50);
-                createProfile(d2, 6, 10, 50);
-                createProfile(d2, 11, 20, 60);
-                createProfile(d2, 21, 30, 120);
-                createProfile(d2, 31, 42, 120);
-                createProfile(d2, 43, 60, 120);
-                createProfile(d2, 61, 72, 125);
-                createProfile(d2, 73, 90, 150);
-                createProfile(d2, 91, 100, 190);
-                createProfile(d2, 101, 130, 210);
-                createProfile(d2, 131, 142, 260);
-                createProfile(d2, 143, 200, 110);
-                createProfile(d2, 201, 260, 110);
-                createProfile(d2, 261, 300, 110);
-                createProfile(d2, 301, 400, 105);
-                createProfile(d2, 401, 500, 80);
-                createProfile(d2, 501, 600, 70);
-                createProfile(d2, 601, 700, 60);
-                createProfile(d2, 701, 800, 0);
+            createProfile(profileRepo, d2, 1, 5, 50);
+            createProfile(profileRepo, d2, 6, 10, 50);
+            createProfile(profileRepo, d2, 11, 20, 60);
+            createProfile(profileRepo, d2, 21, 30, 120);
+            createProfile(profileRepo, d2, 31, 42, 120);
+            createProfile(profileRepo, d2, 43, 60, 120);
+            createProfile(profileRepo, d2, 61, 72, 125);
+            createProfile(profileRepo, d2, 73, 90, 150);
+            createProfile(profileRepo, d2, 91, 100, 190);
+            createProfile(profileRepo, d2, 101, 130, 210);
+            createProfile(profileRepo, d2, 131, 142, 260);
+            createProfile(profileRepo, d2, 143, 200, 110);
+            createProfile(profileRepo, d2, 201, 260, 110);
+            createProfile(profileRepo, d2, 261, 300, 110);
+            createProfile(profileRepo, d2, 301, 400, 105);
+            createProfile(profileRepo, d2, 401, 500, 80);
+            createProfile(profileRepo, d2, 501, 600, 70);
+            createProfile(profileRepo, d2, 601, 700, 60);
+            createProfile(profileRepo, d2, 701, 800, 0);
 
-                createProfile(d3, 1, 5, 30);
-                createProfile(d3, 6, 10, 30);
-                createProfile(d3, 11, 20, 30);
-                createProfile(d3, 21, 30, 30);
-                createProfile(d3, 31, 42, 30);
-                createProfile(d3, 43, 60, 30);
-                createProfile(d3, 61, 72, 30);
-                createProfile(d3, 73, 90, 30);
-                createProfile(d3, 91, 100, 30);
-                createProfile(d3, 101, 130, 30);
-                createProfile(d3, 131, 142, 30);
-                createProfile(d3, 143, 200, 30);
-                createProfile(d3, 201, 260, 30);
-                createProfile(d3, 261, 300, 30);
-                createProfile(d3, 301, 400, 25);
-                createProfile(d3, 401, 500, 20);
-                createProfile(d3, 501, 600, 16);
-                createProfile(d3, 601, 700, 14);
-                createProfile(d3, 701, 800, 12);
+            createProfile(profileRepo, d3, 1, 5, 30);
+            createProfile(profileRepo, d3, 6, 10, 30);
+            createProfile(profileRepo, d3, 11, 20, 30);
+            createProfile(profileRepo, d3, 21, 30, 30);
+            createProfile(profileRepo, d3, 31, 42, 30);
+            createProfile(profileRepo, d3, 43, 60, 30);
+            createProfile(profileRepo, d3, 61, 72, 30);
+            createProfile(profileRepo, d3, 73, 90, 30);
+            createProfile(profileRepo, d3, 91, 100, 30);
+            createProfile(profileRepo, d3, 101, 130, 30);
+            createProfile(profileRepo, d3, 131, 142, 30);
+            createProfile(profileRepo, d3, 143, 200, 30);
+            createProfile(profileRepo, d3, 201, 260, 30);
+            createProfile(profileRepo, d3, 261, 300, 30);
+            createProfile(profileRepo, d3, 301, 400, 25);
+            createProfile(profileRepo, d3, 401, 500, 20);
+            createProfile(profileRepo, d3, 501, 600, 16);
+            createProfile(profileRepo, d3, 601, 700, 14);
+            createProfile(profileRepo, d3, 701, 800, 12);
 
-                createProfile(d4, 1, 5, 12);
-                createProfile(d4, 6, 10, 12);
-                createProfile(d4, 11, 20, 12);
-                createProfile(d4, 21, 30, 10);
-                createProfile(d4, 31, 42, 7);
-                createProfile(d4, 43, 60, 5);
-                createProfile(d4, 61, 72, 4);
-                createProfile(d4, 73, 90, 3);
-                createProfile(d4, 91, 100, 3);
-                createProfile(d4, 101, 130, 2);
-                createProfile(d4, 131, 142, 2);
-                createProfile(d4, 143, 200, 1);
-                createProfile(d4, 201, 260, 0);
-                createProfile(d4, 261, 300, 0);
-                createProfile(d4, 301, 400, 0);
-                createProfile(d4, 401, 500, 0);
-                createProfile(d4, 501, 600, 0);
-                createProfile(d4, 601, 700, 0);
-                createProfile(d4, 701, 800, 0);
+            createProfile(profileRepo, d4, 1, 5, 12);
+            createProfile(profileRepo, d4, 6, 10, 12);
+            createProfile(profileRepo, d4, 11, 20, 12);
+            createProfile(profileRepo, d4, 21, 30, 10);
+            createProfile(profileRepo, d4, 31, 42, 7);
+            createProfile(profileRepo, d4, 43, 60, 5);
+            createProfile(profileRepo, d4, 61, 72, 4);
+            createProfile(profileRepo, d4, 73, 90, 3);
+            createProfile(profileRepo, d4, 91, 100, 3);
+            createProfile(profileRepo, d4, 101, 130, 2);
+            createProfile(profileRepo, d4, 131, 142, 2);
+            createProfile(profileRepo, d4, 143, 200, 1);
+            createProfile(profileRepo, d4, 201, 260, 0);
+            createProfile(profileRepo, d4, 261, 300, 0);
+            createProfile(profileRepo, d4, 301, 400, 0);
+            createProfile(profileRepo, d4, 401, 500, 0);
+            createProfile(profileRepo, d4, 501, 600, 0);
+            createProfile(profileRepo, d4, 601, 700, 0);
+            createProfile(profileRepo, d4, 701, 800, 0);
             }
         };
     }
@@ -300,13 +301,18 @@ public class DataLoader {
         return repo.save(d);
     }
 
-    private void createProfile(Device d, int minV, int maxV, double amps) {
+     private void createProfile(DeviceProfileRepository repo,
+                           Device d,
+                           int minV,
+                           int maxV,
+                           double amps) {
+         
         DeviceProfile p = new DeviceProfile();
         p.setDevice(d);
         p.setMinVoltage(minV);
         p.setMaxVoltage(maxV);
         p.setMaxAmps(amps);
 
-        d.getProfiles().add(p);
+        repo.save(p);
     }
 }
