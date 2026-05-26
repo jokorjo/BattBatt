@@ -43,6 +43,9 @@ public class DataLoader {
                 createOverflowStorage(storageRepo, slotRepo, "Overflow NMC", "NMC");
                 createOverflowStorage(storageRepo, slotRepo, "Overflow LFP", "LFP");
                 createOverflowStorage(storageRepo, slotRepo, "Overflow Other", "ANY");
+            
+                // 🔥 PROCESSING AREA
+                createProcessingStorage(storageRepo, slotRepo, "Processing Area");
             }
 
             // =========================
