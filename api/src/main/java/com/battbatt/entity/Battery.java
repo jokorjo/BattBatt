@@ -35,6 +35,9 @@ public class Battery {
     @JsonIgnoreProperties("storage")
     private StorageSlot storageSlot;
 
+    // 🔥 ONKO AKKU KÄSITTELYSSÄ
+    private boolean inProcessing = false;
+
     // ===== GETTERIT & SETTERIT =====
 
     public Long getId() {
@@ -79,5 +82,13 @@ public class Battery {
 
     public void setPinned(boolean pinned) {
         this.pinned = pinned;
+    }
+    
+    public boolean isInProcessing() {
+    return inProcessing;
+    }
+
+    public void setInProcessing(boolean inProcessing) {
+    this.inProcessing = inProcessing;
     }
 }
