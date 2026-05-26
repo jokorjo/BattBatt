@@ -46,14 +46,25 @@ public class ProcessingOptimizationService {
 
                 double discharge = getBestDischarge(b, devices);
 
+                // 🔥 skip täysin mahdottomat (ei yhtään laitetta)
+                if (discharge == Double.MAX_VALUE) continue;
+
                 double newWorker = workerUsed + prep + mech;
                 double newDevice = deviceUsed + discharge;
 
-                if (newWorker > maxWorkerTime || newDevice > maxDeviceTime)
-                    continue;
+                // 🔥 EI enää hylätä — annetaan penalty
+                double overflowPenalty = 0;
 
-                double workerIdle = maxWorkerTime - newWorker;
-                double deviceIdle = maxDeviceTime - newDevice;
+                if (newWorker > maxWorkerTime) {
+                    overflowPenalty += (newWorker - maxWorkerTime) * 100;
+                }
+
+                if (newDevice > maxDeviceTime) {
+                    overflowPenalty += (newDevice - maxDeviceTime) * 100;
+                }
+
+                double workerIdle = Math.max(0, maxWorkerTime - newWorker);
+                double deviceIdle = Math.max(0, maxDeviceTime - newDevice);
 
                 double waste = workerIdle + deviceIdle;
 
@@ -62,7 +73,7 @@ public class ProcessingOptimizationService {
 
                 double imbalance = Math.abs(workerRatio - deviceRatio);
 
-                double score = waste + imbalance * 1000;
+                double score = waste + imbalance * 1000 + overflowPenalty;
 
                 if (score < bestScore) {
                     bestScore = score;
@@ -101,11 +112,12 @@ public class ProcessingOptimizationService {
         double amps = d.getProfiles().stream()
                 .filter(p -> b.getBatteryType().getVoltage() >= p.getMinVoltage()
                         && b.getBatteryType().getVoltage() <= p.getMaxVoltage())
-                .findFirst()
                 .map(DeviceProfile::getMaxAmps)
+                .filter(a -> a > 0) // 🔥 poista nolla-ampeerit
+                .max(Double::compare) // 🔥 ota paras mahdollinen
                 .orElse(0.0);
 
-        if (amps == 0) return Double.MAX_VALUE;
+        if (amps <= 0) return Double.MAX_VALUE;
 
         return (b.getBatteryType().getAh() / amps) * 60;
     }
