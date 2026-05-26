@@ -31,34 +31,31 @@ public class OptimizationController {
     public Object optimize() {
 
         try {
-            // 🔹 hae data tietokannasta
-            List<Battery> batteries = batteryRepository.findAll();
+            // 🔹 hae data (JOIN FETCH jos käytössä!)
+            List<Battery> batteries = batteryRepository.findAllWithType();
             List<StorageSlot> slots = storageSlotRepository.findAll();
 
-            // 🔥 DEBUG LOG
             System.out.println("Batteries: " + batteries.size());
             System.out.println("Slots: " + slots.size());
 
-            // 🔥 ESTÄ CRASH
             if (batteries.isEmpty()) {
-                return "❌ No batteries found. Add batteries first via /api/batteries";
+                return "❌ No batteries found.";
             }
 
             if (slots.isEmpty()) {
                 return "❌ No storage slots found.";
             }
 
-            // 🔥 aja solver
+            // 🔥 SOLVE
             BatteryPlan solution =
                     optimizationService.solve(batteries, slots);
 
-            // 🔥 tallenna tulos
+            // 🔥 TALLENNA (sis. pinned)
             batteryRepository.saveAll(solution.getBatteryList());
 
-            return solution;
+            return solution.getBatteryList(); // 🔥 helpompi debug kuin whole plan
 
         } catch (Exception e) {
-            // 🔥 TÄMÄ PALJASTAA VIRHEEN
             e.printStackTrace();
             return "❌ ERROR: " + e.getMessage();
         }
