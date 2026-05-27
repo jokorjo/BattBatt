@@ -23,11 +23,13 @@ public class ProcessingOptimizationService {
         double maxDeviceTime = devices.size() * workingMinutes;
 
         // 🔥 VAIN VARASTOSSA + PINNED + EI PROCESSING
-        List<Battery> candidates = batteries.stream()
+        List<Battery> candidates = new ArrayList<>(
+            batteries.stream()
                 .filter(b -> b.getStorageSlot() != null)
                 .filter(Battery::isPinned)
                 .filter(b -> !b.isInProcessing())
-                .toList();
+                .toList()
+        );
 
         List<Battery> selected = new ArrayList<>();
 
