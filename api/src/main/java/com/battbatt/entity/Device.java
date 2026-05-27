@@ -13,6 +13,7 @@ public class Device {
 
     private String name;
 
+    // 🔥 EAGER ok tässä (tarvitset solverille)
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<DeviceProfile> profiles = new ArrayList<>();
 
