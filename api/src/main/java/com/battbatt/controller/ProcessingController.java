@@ -86,7 +86,6 @@ public void confirmAll() {
     }
 
     batteryRepo.saveAll(toProcess);
-}
     }
 
     public static class Request {
