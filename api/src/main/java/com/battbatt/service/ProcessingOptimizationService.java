@@ -22,13 +22,13 @@ public class ProcessingOptimizationService {
         double maxWorkerTime = workers * workingMinutes;
         double maxDeviceTime = devices.size() * workingMinutes;
 
-        // 🔥 VAIN VARASTOSSA + PINNED + EI PROCESSING
+        // 🔥 candidates
         List<Battery> candidates = new ArrayList<>(
-            batteries.stream()
-                .filter(b -> b.getStorageSlot() != null)
-                .filter(Battery::isPinned)
-                .filter(b -> !b.isInProcessing())
-                .toList()
+                batteries.stream()
+                        .filter(b -> b.getStorageSlot() != null)
+                        .filter(Battery::isPinned)
+                        .filter(b -> !b.isInProcessing())
+                        .toList()
         );
 
         List<Battery> selected = new ArrayList<>();
@@ -48,13 +48,28 @@ public class ProcessingOptimizationService {
 
                 double discharge = getBestDischarge(b, devices);
 
-                // 🔥 skip täysin mahdottomat (ei yhtään laitetta)
+                // 🔥 skip impossible
                 if (discharge == Double.MAX_VALUE) continue;
 
                 double newWorker = workerUsed + prep + mech;
                 double newDevice = deviceUsed + discharge;
 
-                // 🔥 EI enää hylätä — annetaan penalty
+                // =========================
+                // 🔥 BUFFER CONTROL (TÄRKEIN)
+                // =========================
+
+                double endPrep = workerUsed + prep;
+                double startDischarge = deviceUsed;
+
+                double bufferTime = startDischarge - endPrep;
+
+                // 🔥 timelimit between prep and discharge - reducing too many batteries prepped
+                if (bufferTime > 40) continue;
+
+                // =========================
+                // SCORING
+                // =========================
+
                 double overflowPenalty = 0;
 
                 if (newWorker > maxWorkerTime) {
@@ -75,7 +90,13 @@ public class ProcessingOptimizationService {
 
                 double imbalance = Math.abs(workerRatio - deviceRatio);
 
-                double score = waste + imbalance * 1000 + overflowPenalty;
+                // 🔥 FLOW PRIORITY (mech tärkeä)
+                double flowPenalty = (newWorker + newDevice);
+
+                double score = waste
+                        + imbalance * 1000
+                        + overflowPenalty
+                        + flowPenalty;
 
                 if (score < bestScore) {
                     bestScore = score;
@@ -115,12 +136,12 @@ public class ProcessingOptimizationService {
                 .filter(p -> b.getBatteryType().getVoltage() >= p.getMinVoltage()
                         && b.getBatteryType().getVoltage() <= p.getMaxVoltage())
                 .map(DeviceProfile::getMaxAmps)
-                .filter(a -> a > 0) // 🔥 poista nolla-ampeerit
-                .max(Double::compare) // 🔥 ota paras mahdollinen
+                .filter(a -> a > 0)
+                .max(Double::compare)
                 .orElse(0.0);
 
         if (amps <= 0) return Double.MAX_VALUE;
 
-        return (b.getBatteryType().getAh() / amps) * 60;
+        return (b.getBatteryType().getAh() *0.9 / amps) * 60; /// Batteries are discharged 90% of max capacity
     }
 }
