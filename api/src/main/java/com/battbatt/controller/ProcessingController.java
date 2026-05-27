@@ -46,20 +46,47 @@ public class ProcessingController {
     }
 
     @PostMapping("/confirm")
-    public void confirm(@RequestBody List<Long> ids) {
+public void confirm(@RequestBody List<Long> ids) {
 
-        List<Battery> batteries = batteryRepo.findAllById(ids);
+    List<Battery> batteries = batteryRepo.findAllById(ids);
 
-        // 🔥 hae processing slot
-        StorageSlot processingSlot =
-                slotRepo.findByStorageName("Processing Area");
+    StorageSlot processingSlot =
+            slotRepo.findByStorageName("Processing Area");
 
-        for (Battery b : batteries) {
-            b.setInProcessing(true);
-            b.setStorageSlot(processingSlot); // ❗ EI enää null
-        }
+    for (Battery b : batteries) {
+        b.setInProcessing(true);
+        b.setStorageSlot(processingSlot);
+    }
 
-        batteryRepo.saveAll(batteries);
+    batteryRepo.saveAll(batteries);
+}
+
+
+// =========================
+// 🔹 CONFIRM ALL (uusi)
+// =========================
+
+@PostMapping("/confirm-all")
+public void confirmAll() {
+
+    List<Battery> batteries = batteryRepo.findAll();
+
+    List<Battery> toProcess = batteries.stream()
+            .filter(b -> b.getStorageSlot() != null)
+            .filter(Battery::isPinned)
+            .filter(b -> !b.isInProcessing())
+            .toList();
+
+    StorageSlot processingSlot =
+            slotRepo.findByStorageName("Processing Area");
+
+    for (Battery b : toProcess) {
+        b.setInProcessing(true);
+        b.setStorageSlot(processingSlot);
+    }
+
+    batteryRepo.saveAll(toProcess);
+}
     }
 
     public static class Request {
