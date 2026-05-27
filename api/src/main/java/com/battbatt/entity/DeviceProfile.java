@@ -1,5 +1,6 @@
 package com.battbatt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,7 +10,9 @@ public class DeviceProfile {
     @GeneratedValue
     private Long id;
 
+    // 🔥 ESTÄÄ JSON loopin (TÄRKEIN FIX)
     @ManyToOne
+    @JsonIgnore
     private Device device;
 
     private int minVoltage;
