@@ -8,11 +8,39 @@ import java.util.*;
 @Service
 public class ProcessingOptimizationService {
 
+    // =========================
+    // RESULT
+    // =========================
+
     public static class Result {
         public List<Battery> selected;
         public double workerUsed;
         public double deviceUsed;
+
+        public List<WorkerSchedule> workers;
+        public List<DeviceSchedule> devices;
     }
+
+    public static class WorkerSchedule {
+        public int workerId;
+        public List<Task> tasks = new ArrayList<>();
+    }
+
+    public static class DeviceSchedule {
+        public String deviceName;
+        public List<Task> tasks = new ArrayList<>();
+    }
+
+    public static class Task {
+        public Long batteryId;
+        public String type; // PREP / DISCHARGE / MECH
+        public double start;
+        public double end;
+    }
+
+    // =========================
+    // MAIN
+    // =========================
 
     public Result optimize(List<Battery> batteries,
                            List<Device> devices,
@@ -22,8 +50,8 @@ public class ProcessingOptimizationService {
         double maxWorkerTime = workers * workingMinutes;
         double maxDeviceTime = devices.size() * workingMinutes;
 
-        // 🔥 candidates
-        List<Battery> candidates = new ArrayList<>(
+        // Candidates
+		List<Battery> candidates = new ArrayList<>(
                 batteries.stream()
                         .filter(b -> b.getStorageSlot() != null)
                         .filter(Battery::isPinned)
@@ -36,6 +64,25 @@ public class ProcessingOptimizationService {
         double workerUsed = 0;
         double deviceUsed = 0;
 
+        // 🔥 aikataulut
+        List<WorkerSchedule> workerSchedules = new ArrayList<>();
+        for (int i = 0; i < workers; i++) {
+            WorkerSchedule ws = new WorkerSchedule();
+            ws.workerId = i;
+            workerSchedules.add(ws);
+        }
+
+        Map<String, DeviceSchedule> deviceSchedules = new HashMap<>();
+        for (Device d : devices) {
+            DeviceSchedule ds = new DeviceSchedule();
+            ds.deviceName = d.getName();
+            deviceSchedules.put(d.getName(), ds);
+        }
+
+        // 🔥 yksinkertainen timeline
+        double workerTime = 0;
+        double deviceTime = 0;
+
         while (true) {
 
             Battery bestBattery = null;
@@ -45,31 +92,24 @@ public class ProcessingOptimizationService {
 
                 double prep = b.getBatteryType().getPreparationTime();
                 double mech = b.getBatteryType().getMechanicalTime();
-
                 double discharge = getBestDischarge(b, devices);
-
-                // 🔥 skip impossible
+		
+		// skip impossible
                 if (discharge == Double.MAX_VALUE) continue;
 
                 double newWorker = workerUsed + prep + mech;
                 double newDevice = deviceUsed + discharge;
 
-                // =========================
-                // 🔥 BUFFER CONTROL (TÄRKEIN)
-                // =========================
-
-                double endPrep = workerUsed + prep;
-                double startDischarge = deviceUsed;
+                // 🔥 BUFFER CONTROL
+                double endPrep = workerTime + prep;
+                double startDischarge = deviceTime;
 
                 double bufferTime = startDischarge - endPrep;
-
-                // 🔥 timelimit between prep and discharge - reducing too many batteries prepped
+		
+		// timelimit between prep and discharge - reducing too many batteries prepped
                 if (bufferTime > 40) continue;
 
-                // =========================
-                // SCORING
-                // =========================
-
+		// Scoring
                 double overflowPenalty = 0;
 
                 if (newWorker > maxWorkerTime) {
@@ -90,13 +130,10 @@ public class ProcessingOptimizationService {
 
                 double imbalance = Math.abs(workerRatio - deviceRatio);
 
-                // 🔥 FLOW PRIORITY (mech tärkeä)
+		// Flow priority
                 double flowPenalty = (newWorker + newDevice);
 
-                double score = waste
-                        + imbalance * 1000
-                        + overflowPenalty
-                        + flowPenalty;
+                double score = waste + imbalance * 1000 + overflowPenalty + flowPenalty;
 
                 if (score < bestScore) {
                     bestScore = score;
@@ -109,10 +146,56 @@ public class ProcessingOptimizationService {
             selected.add(bestBattery);
             candidates.remove(bestBattery);
 
-            workerUsed += bestBattery.getBatteryType().getPreparationTime()
-                    + bestBattery.getBatteryType().getMechanicalTime();
+            double prep = bestBattery.getBatteryType().getPreparationTime();
+            double mech = bestBattery.getBatteryType().getMechanicalTime();
+            double discharge = getBestDischarge(bestBattery, devices);
 
-            deviceUsed += getBestDischarge(bestBattery, devices);
+            // 🔥 VALITAAN LAITE
+            Device bestDevice = findBestDevice(bestBattery, devices);
+
+            // 🔥 WORKER (yksinkertainen jako)
+            WorkerSchedule ws = workerSchedules.get(selected.size() % workers);
+
+            double startPrep = workerTime;
+            double endPrep = startPrep + prep;
+
+            double startDischarge = Math.max(endPrep, deviceTime);
+            double endDischarge = startDischarge + discharge;
+
+            double startMech = endDischarge;
+            double endMech = startMech + mech;
+
+            // 🔥 WORKER TASKS
+            Task prepTask = new Task();
+            prepTask.batteryId = bestBattery.getId();
+            prepTask.type = "PREP";
+            prepTask.start = startPrep;
+            prepTask.end = endPrep;
+            ws.tasks.add(prepTask);
+
+            Task mechTask = new Task();
+            mechTask.batteryId = bestBattery.getId();
+            mechTask.type = "MECH";
+            mechTask.start = startMech;
+            mechTask.end = endMech;
+            ws.tasks.add(mechTask);
+
+            // 🔥 DEVICE TASK
+            DeviceSchedule ds = deviceSchedules.get(bestDevice.getName());
+
+            Task dischargeTask = new Task();
+            dischargeTask.batteryId = bestBattery.getId();
+            dischargeTask.type = "DISCHARGE";
+            dischargeTask.start = startDischarge;
+            dischargeTask.end = endDischarge;
+            ds.tasks.add(dischargeTask);
+
+            // 🔥 päivitä ajat
+            workerTime = endMech;
+            deviceTime = endDischarge;
+
+            workerUsed += prep + mech;
+            deviceUsed += discharge;
         }
 
         Result result = new Result();
@@ -120,7 +203,20 @@ public class ProcessingOptimizationService {
         result.workerUsed = workerUsed;
         result.deviceUsed = deviceUsed;
 
+        result.workers = workerSchedules;
+        result.devices = new ArrayList<>(deviceSchedules.values());
+
         return result;
+    }
+
+    // =========================
+    // HELPERS
+    // =========================
+
+    private Device findBestDevice(Battery b, List<Device> devices) {
+        return devices.stream()
+                .min(Comparator.comparing(d -> calculateDischarge(b, d)))
+                .orElse(null);
     }
 
     private double getBestDischarge(Battery b, List<Device> devices) {
@@ -142,6 +238,6 @@ public class ProcessingOptimizationService {
 
         if (amps <= 0) return Double.MAX_VALUE;
 
-        return (b.getBatteryType().getAh() *0.9 / amps) * 60; /// Batteries are discharged 90% of max capacity
+        return (b.getBatteryType().getAh() * 0.9 / amps) * 60;
     }
 }
