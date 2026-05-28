@@ -90,7 +90,7 @@ public class ProcessingOptimizationService {
         for (Map.Entry<Long, List<Battery>> entry : palletGroups.entrySet()) {
 
             List<Battery> group = entry.getValue();
-            int capacity = group.get(0).getStorageSlot().getCapacity();
+            double capacity = group.get(0).getStorageSlot().getCapacity();
 
             double fillRate = (double) group.size() / capacity;
 
