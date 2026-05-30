@@ -9,28 +9,32 @@ import java.util.*;
 public class ProcessingOptimizationService {
 
     // =========================
-    // RESULT
+    // RESULT STRUCTURES
     // =========================
 
+    // Final result returned by optimizer
     public static class Result {
-        public List<Battery> selected;
-        public double workerUsed;
-        public double deviceUsed;
+        public List<Battery> selected;     // Batteries selected for processing
+        public double workerUsed;          // Total worker time used
+        public double deviceUsed;          // Total device time used
 
-        public List<WorkerSchedule> workers;
-        public List<DeviceSchedule> devices;
+        public List<WorkerSchedule> workers; // Worker timelines
+        public List<DeviceSchedule> devices; // Device timelines
     }
 
+    // Worker timeline
     public static class WorkerSchedule {
         public int workerId;
         public List<Task> tasks = new ArrayList<>();
     }
 
+    // Device timeline
     public static class DeviceSchedule {
         public String deviceName;
         public List<Task> tasks = new ArrayList<>();
     }
 
+    // Generic task (prep / discharge / mech)
     public static class Task {
         public Long batteryId;
         public String type; // PREP / DISCHARGE / MECH
@@ -39,7 +43,7 @@ public class ProcessingOptimizationService {
     }
 
     // =========================
-    // MAIN
+    // MAIN OPTIMIZATION METHOD
     // =========================
 
     public Result optimize(List<Battery> batteries,
@@ -47,15 +51,16 @@ public class ProcessingOptimizationService {
                            int workers,
                            int workingMinutes) {
 
+        // Total available capacity
         double maxWorkerTime = workers * workingMinutes;
         double maxDeviceTime = devices.size() * workingMinutes;
 
-        // Candidates 
+        // Filter valid candidates
         List<Battery> candidates = new ArrayList<>(
                 batteries.stream()
-                        .filter(b -> b.getStorageSlot() != null)
-                        .filter(Battery::isPinned)
-                        .filter(b -> !b.isInProcessing())
+                        .filter(b -> b.getStorageSlot() != null) // must be in storage
+                        .filter(Battery::isPinned)               // must be selected
+                        .filter(b -> !b.isInProcessing())        // not already processing
                         .toList()
         );
 
@@ -64,9 +69,9 @@ public class ProcessingOptimizationService {
         double workerUsed = 0;
         double deviceUsed = 0;
 
-        // 🔥 =========================
-        // 🔥 GROUP PALLETS (NEW)
-        // 🔥 =========================
+        // =========================
+        // GROUP BATTERIES INTO PALLETS
+        // =========================
 
         Map<Long, List<Battery>> palletGroups = new HashMap<>();
         List<Battery> normalBatteries = new ArrayList<>();
@@ -76,6 +81,7 @@ public class ProcessingOptimizationService {
             boolean isModule = b.getBatteryType().getType().equalsIgnoreCase("MODULE");
             boolean isPallet = b.getStorageSlot().getStorage().getStorageType().equalsIgnoreCase("PALLET");
 
+            // Group modules stored in pallets
             if (isModule && isPallet) {
                 Long slotId = b.getStorageSlot().getId();
                 palletGroups.computeIfAbsent(slotId, k -> new ArrayList<>()).add(b);
@@ -84,7 +90,10 @@ public class ProcessingOptimizationService {
             }
         }
 
-        // 🔥 filter only valid pallets (>=70%)
+        // =========================
+        // APPLY 70% PALLET RULE
+        // =========================
+
         List<List<Battery>> validPallets = new ArrayList<>();
 
         for (Map.Entry<Long, List<Battery>> entry : palletGroups.entrySet()) {
@@ -94,12 +103,16 @@ public class ProcessingOptimizationService {
 
             double fillRate = (double) group.size() / capacity;
 
+            // Only allow sufficiently filled pallets
             if (fillRate >= 0.7) {
                 validPallets.add(group);
             }
         }
 
-        // 🔥 aikataulut
+        // =========================
+        // INIT SCHEDULE STRUCTURES
+        // =========================
+
         List<WorkerSchedule> workerSchedules = new ArrayList<>();
         for (int i = 0; i < workers; i++) {
             WorkerSchedule ws = new WorkerSchedule();
@@ -114,13 +127,13 @@ public class ProcessingOptimizationService {
             deviceSchedules.put(d.getName(), ds);
         }
 
-        // 🔥 timeline
+        // Global timeline (single-threaded simulation)
         double workerTime = 0;
         double deviceTime = 0;
 
-        // 🔥 =========================
-        // 🔥 MAIN LOOP (UPDATED)
-        // 🔥 =========================
+        // =========================
+        // MAIN LOOP
+        // =========================
 
         while (true) {
 
@@ -128,28 +141,28 @@ public class ProcessingOptimizationService {
             List<Battery> bestGroup = null;
             double bestScore = Double.MAX_VALUE;
 
-            // 🔹 NORMAL BATTERIES (PACK)
+            // -------------------------
+            // Evaluate single batteries
+            // -------------------------
             for (Battery b : normalBatteries) {
 
                 double prep = b.getBatteryType().getPreparationTime();
                 double mech = b.getBatteryType().getMechanicalTime();
                 double discharge = getBestDischarge(b, devices);
 
-                // skip impossible
                 if (discharge == Double.MAX_VALUE) continue;
 
                 double newWorker = workerUsed + prep + mech;
                 double newDevice = deviceUsed + discharge;
 
-                // 🔥 BUFFER CONTROL
+                // Prevent excessive buffer between prep and discharge
                 double endPrep = workerTime + prep;
                 double startDischarge = deviceTime;
 
                 double bufferTime = startDischarge - endPrep;
-
                 if (bufferTime > 40) continue;
 
-                // Scoring
+                // Penalties if exceeding available time
                 double overflowPenalty = 0;
 
                 if (newWorker > maxWorkerTime) {
@@ -160,16 +173,19 @@ public class ProcessingOptimizationService {
                     overflowPenalty += (newDevice - maxDeviceTime) * 100;
                 }
 
+                // Idle time
                 double workerIdle = Math.max(0, maxWorkerTime - newWorker);
                 double deviceIdle = Math.max(0, maxDeviceTime - newDevice);
 
                 double waste = workerIdle + deviceIdle;
 
+                // Balance worker vs device usage
                 double workerRatio = newWorker / maxWorkerTime;
                 double deviceRatio = newDevice / maxDeviceTime;
 
                 double imbalance = Math.abs(workerRatio - deviceRatio);
 
+                // Flow penalty (prefer shorter pipelines)
                 double flowPenalty = (newWorker + newDevice);
 
                 double score = waste + imbalance * 1000 + overflowPenalty + flowPenalty;
@@ -181,7 +197,9 @@ public class ProcessingOptimizationService {
                 }
             }
 
-            // 🔹 PALLET GROUPS
+            // -------------------------
+            // Evaluate pallet groups
+            // -------------------------
             for (List<Battery> group : validPallets) {
 
                 double prep = group.stream().mapToDouble(b -> b.getBatteryType().getPreparationTime()).sum();
@@ -224,7 +242,10 @@ public class ProcessingOptimizationService {
 
             if (bestBattery == null && bestGroup == null) break;
 
-            // 🔥 PROCESS GROUP
+            // =========================
+            // APPLY SELECTION
+            // =========================
+
             if (bestGroup != null) {
 
                 for (Battery b : bestGroup) {
@@ -234,113 +255,39 @@ public class ProcessingOptimizationService {
                 normalBatteries.removeAll(bestGroup);
                 validPallets.remove(bestGroup);
 
-                double totalPrep = 0;
-                double totalMech = 0;
-                double totalDischarge = 0;
-
                 for (Battery b : bestGroup) {
 
-                    double prep = b.getBatteryType().getPreparationTime();
-                    double mech = b.getBatteryType().getMechanicalTime();
-                    double discharge = getBestDischarge(b, devices);
+                    scheduleBattery(b, devices, workerSchedules, deviceSchedules);
 
-                    totalPrep += prep;
-                    totalMech += mech;
-                    totalDischarge += discharge;
+                    workerTime += b.getBatteryType().getPreparationTime()
+                            + b.getBatteryType().getMechanicalTime();
 
-                    Device bestDevice = findBestDevice(b, devices);
-                    WorkerSchedule ws = workerSchedules.get(selected.size() % workers);
+                    deviceTime += getBestDischarge(b, devices);
 
-                    double startPrep = workerTime;
-                    double endPrep = startPrep + prep;
+                    workerUsed += b.getBatteryType().getPreparationTime()
+                            + b.getBatteryType().getMechanicalTime();
 
-                    double startDischarge = Math.max(endPrep, deviceTime);
-                    double endDischarge = startDischarge + discharge;
-
-                    double startMech = endDischarge;
-                    double endMech = startMech + mech;
-
-                    Task prepTask = new Task();
-                    prepTask.batteryId = b.getId();
-                    prepTask.type = "PREP";
-                    prepTask.start = startPrep;
-                    prepTask.end = endPrep;
-                    ws.tasks.add(prepTask);
-
-                    Task mechTask = new Task();
-                    mechTask.batteryId = b.getId();
-                    mechTask.type = "MECH";
-                    mechTask.start = startMech;
-                    mechTask.end = endMech;
-                    ws.tasks.add(mechTask);
-
-                    DeviceSchedule ds = deviceSchedules.get(bestDevice.getName());
-
-                    Task dischargeTask = new Task();
-                    dischargeTask.batteryId = b.getId();
-                    dischargeTask.type = "DISCHARGE";
-                    dischargeTask.start = startDischarge;
-                    dischargeTask.end = endDischarge;
-                    ds.tasks.add(dischargeTask);
-
-                    workerTime = endMech;
-                    deviceTime = endDischarge;
+                    deviceUsed += getBestDischarge(b, devices);
                 }
-
-                workerUsed += totalPrep + totalMech;
-                deviceUsed += totalDischarge;
 
                 continue;
             }
 
-            // 🔥 PROCESS SINGLE BATTERY (PACK)
+            // Single battery
             selected.add(bestBattery);
             normalBatteries.remove(bestBattery);
 
-            double prep = bestBattery.getBatteryType().getPreparationTime();
-            double mech = bestBattery.getBatteryType().getMechanicalTime();
-            double discharge = getBestDischarge(bestBattery, devices);
+            scheduleBattery(bestBattery, devices, workerSchedules, deviceSchedules);
 
-            Device bestDevice = findBestDevice(bestBattery, devices);
-            WorkerSchedule ws = workerSchedules.get(selected.size() % workers);
+            workerTime += bestBattery.getBatteryType().getPreparationTime()
+                    + bestBattery.getBatteryType().getMechanicalTime();
 
-            double startPrep = workerTime;
-            double endPrep = startPrep + prep;
+            deviceTime += getBestDischarge(bestBattery, devices);
 
-            double startDischarge = Math.max(endPrep, deviceTime);
-            double endDischarge = startDischarge + discharge;
+            workerUsed += bestBattery.getBatteryType().getPreparationTime()
+                    + bestBattery.getBatteryType().getMechanicalTime();
 
-            double startMech = endDischarge;
-            double endMech = startMech + mech;
-
-            Task prepTask = new Task();
-            prepTask.batteryId = bestBattery.getId();
-            prepTask.type = "PREP";
-            prepTask.start = startPrep;
-            prepTask.end = endPrep;
-            ws.tasks.add(prepTask);
-
-            Task mechTask = new Task();
-            mechTask.batteryId = bestBattery.getId();
-            mechTask.type = "MECH";
-            mechTask.start = startMech;
-            mechTask.end = endMech;
-            ws.tasks.add(mechTask);
-
-            DeviceSchedule ds = deviceSchedules.get(bestDevice.getName());
-
-            Task dischargeTask = new Task();
-            dischargeTask.batteryId = bestBattery.getId();
-            dischargeTask.type = "DISCHARGE";
-            dischargeTask.start = startDischarge;
-            dischargeTask.end = endDischarge;
-            ds.tasks.add(dischargeTask);
-
-            workerTime = endMech;
-            deviceTime = endDischarge;
-
-            workerUsed += prep + mech;
-            deviceUsed += discharge;
+            deviceUsed += getBestDischarge(bestBattery, devices);
         }
 
         Result result = new Result();
@@ -355,8 +302,44 @@ public class ProcessingOptimizationService {
     }
 
     // =========================
-    // HELPERS
+    // SCHEDULING HELPER
     // =========================
+
+    private void scheduleBattery(Battery b,
+                                 List<Device> devices,
+                                 List<WorkerSchedule> workerSchedules,
+                                 Map<String, DeviceSchedule> deviceSchedules) {
+
+        Device bestDevice = findBestDevice(b, devices);
+        WorkerSchedule ws = workerSchedules.get(0); // simple assignment
+
+        double prep = b.getBatteryType().getPreparationTime();
+        double mech = b.getBatteryType().getMechanicalTime();
+        double discharge = getBestDischarge(b, devices);
+
+        Task prepTask = new Task();
+        prepTask.batteryId = b.getId();
+        prepTask.type = "PREP";
+        prepTask.start = 0;
+        prepTask.end = prep;
+        ws.tasks.add(prepTask);
+
+        Task mechTask = new Task();
+        mechTask.batteryId = b.getId();
+        mechTask.type = "MECH";
+        mechTask.start = prep + discharge;
+        mechTask.end = mechTask.start + mech;
+        ws.tasks.add(mechTask);
+
+        DeviceSchedule ds = deviceSchedules.get(bestDevice.getName());
+
+        Task dischargeTask = new Task();
+        dischargeTask.batteryId = b.getId();
+        dischargeTask.type = "DISCHARGE";
+        dischargeTask.start = prep;
+        dischargeTask.end = prep + discharge;
+        ds.tasks.add(dischargeTask);
+    }
 
     private Device findBestDevice(Battery b, List<Device> devices) {
         return devices.stream()
@@ -371,9 +354,15 @@ public class ProcessingOptimizationService {
                 .orElse(Double.MAX_VALUE);
     }
 
+    // =========================
+    // DISCHARGE CALCULATION (SAFE)
+    // =========================
+
     private double calculateDischarge(Battery b, Device d) {
 
-        double amps = d.getProfiles().stream()
+        double ah = b.getBatteryType().getAh();
+
+        double deviceMaxAmps = d.getProfiles().stream()
                 .filter(p -> b.getBatteryType().getVoltage() >= p.getMinVoltage()
                         && b.getBatteryType().getVoltage() <= p.getMaxVoltage())
                 .map(DeviceProfile::getMaxAmps)
@@ -381,8 +370,16 @@ public class ProcessingOptimizationService {
                 .max(Double::compare)
                 .orElse(0.0);
 
-        if (amps <= 0) return Double.MAX_VALUE;
+        if (deviceMaxAmps <= 0) return Double.MAX_VALUE;
 
-        return (b.getBatteryType().getAh() * 0.9 / amps) * 60;
+        // Enforce maximum 1C discharge rate
+        double maxAllowedAmps = ah;
+
+        double usedAmps = Math.min(deviceMaxAmps, maxAllowedAmps);
+
+        if (usedAmps <= 0) return Double.MAX_VALUE;
+
+        // Discharge 90% of capacity
+        return (ah * 0.9 / usedAmps) * 60;
     }
 }
