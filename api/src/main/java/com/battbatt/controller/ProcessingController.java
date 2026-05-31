@@ -32,7 +32,7 @@ public class ProcessingController {
     }
 
     @PostMapping("/optimize")
-    public Object optimize(@RequestBody Request req) {
+    public ProcessingOptimizationService.Result optimize(@RequestBody Request req) {
 
         List<Battery> batteries = batteryRepo.findAll();
         List<Device> devices = deviceRepo.findAll();
@@ -46,46 +46,45 @@ public class ProcessingController {
     }
 
     @PostMapping("/confirm")
-public void confirm(@RequestBody List<Long> ids) {
+    public void confirm(@RequestBody List<Long> ids) {
 
-    List<Battery> batteries = batteryRepo.findAllById(ids);
+        List<Battery> batteries = batteryRepo.findAllById(ids);
 
-    StorageSlot processingSlot =
-            slotRepo.findByStorageName("Processing Area");
+        StorageSlot processingSlot =
+                slotRepo.findByStorageName("Processing Area");
 
-    for (Battery b : batteries) {
-        b.setInProcessing(true);
-        b.setStorageSlot(processingSlot);
+        for (Battery b : batteries) {
+            b.setInProcessing(true);
+            b.setStorageSlot(processingSlot);
+        }
+
+        batteryRepo.saveAll(batteries);
     }
 
-    batteryRepo.saveAll(batteries);
-}
+    // =========================
+    // 🔹 CONFIRM ALL (uusi)
+    // =========================
 
+    @PostMapping("/confirm-all")
+    public void confirmAll() {
 
-// =========================
-// 🔹 CONFIRM ALL (uusi)
-// =========================
+        List<Battery> batteries = batteryRepo.findAll();
 
-@PostMapping("/confirm-all")
-public void confirmAll() {
+        List<Battery> toProcess = batteries.stream()
+                .filter(b -> b.getStorageSlot() != null)
+                .filter(Battery::isPinned)
+                .filter(b -> !b.isInProcessing())
+                .toList();
 
-    List<Battery> batteries = batteryRepo.findAll();
+        StorageSlot processingSlot =
+                slotRepo.findByStorageName("Processing Area");
 
-    List<Battery> toProcess = batteries.stream()
-            .filter(b -> b.getStorageSlot() != null)
-            .filter(Battery::isPinned)
-            .filter(b -> !b.isInProcessing())
-            .toList();
+        for (Battery b : toProcess) {
+            b.setInProcessing(true);
+            b.setStorageSlot(processingSlot);
+        }
 
-    StorageSlot processingSlot =
-            slotRepo.findByStorageName("Processing Area");
-
-    for (Battery b : toProcess) {
-        b.setInProcessing(true);
-        b.setStorageSlot(processingSlot);
-    }
-
-    batteryRepo.saveAll(toProcess);
+        batteryRepo.saveAll(toProcess);
     }
 
     public static class Request {
