@@ -43,6 +43,11 @@ public class StorageOptimizationService {
                 String batteryType = b.getBatteryType().getType();
 
                 // =========================
+                // 🔥 MINIMAL FIX: ESTÄ PROCESSING AREA
+                // =========================
+                if (storageType.equalsIgnoreCase("PROCESSING")) continue;
+
+                // =========================
                 // 🔥 HARD RULES (TÄRKEIN FIX)
                 // =========================
 
@@ -89,7 +94,12 @@ public class StorageOptimizationService {
 
                     if (s.getStorage() == null) continue;
 
-                    if (s.getStorage().getStorageType().equalsIgnoreCase("OPEN")) {
+                    String storageType = s.getStorage().getStorageType();
+
+                    // 🔥 ESTÄ PROCESSING
+                    if (storageType.equalsIgnoreCase("PROCESSING")) continue;
+
+                    if (storageType.equalsIgnoreCase("OPEN")) {
 
                         boolean chemistryMatch =
                                 s.getStorage().getChemistry().equalsIgnoreCase("ANY") ||
@@ -119,7 +129,12 @@ public class StorageOptimizationService {
 
                     if (s.getStorage() == null) continue;
 
-                    if (s.getStorage().getStorageType().equalsIgnoreCase("OVERFLOW")) {
+                    String storageType = s.getStorage().getStorageType();
+
+                    // 🔥 ESTÄ PROCESSING
+                    if (storageType.equalsIgnoreCase("PROCESSING")) continue;
+
+                    if (storageType.equalsIgnoreCase("OVERFLOW")) {
 
                         boolean chemistryMatch =
                                 s.getStorage().getChemistry().equalsIgnoreCase("ANY") ||
