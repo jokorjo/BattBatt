@@ -287,7 +287,7 @@ public class ProcessingOptimizationService {
 
                 double prep = b.getBatteryType().getPreparationTime();
                 double mech = b.getBatteryType().getMechanicalTime();
-                double discharge = getBestDischarge(b, devices);
+                double discharge = calculateDischarge(b, bestDevice);
                 
                 double startPrep = workerTimes[workerIndex];
                 double endPrep = startPrep + prep;
@@ -298,12 +298,51 @@ public class ProcessingOptimizationService {
                 double startMech = endDischarge;
                 double endMech = startMech + mech;
 
-                ws.tasks.add(task(b, "PREP", startPrep, endPrep));
-                ws.tasks.add(task(b, "MECH", startMech, endMech));
-                ds.tasks.add(task(b, "DISCHARGE", startDischarge, endDischarge));
+                // 🔥 akku ei saa jäädä kesken päivän
+                if (endMech > workingMinutes) {
+                continue;
+                }
+                // 🔥 tee MECH vain jos EI riko device flow'ta
+                double nextDeviceFree = deviceTimes.get(bestDevice.getName());
 
-                workerTimes[workerIndex] = endMech;
+                // 🔥 arvioidaan koska worker saisi seuraavan PREPin valmiiksi
+                double nextPrepEnd = workerTimes[workerIndex] + prep;
+
+                // 🔥 jos teet MECH nyt → viivästyy PREP
+                double mechDelay = mech;
+
+                // 🔥 tee MECH vain jos ehdit vielä tehdä PREPin ennen device free
+                if ((endPrep + mech + prep) <= nextDeviceFree) {
+
+                double mechStart = workerTimes[workerIndex];
+                double mechEnd = mechStart + mech;
+
+                if (mechEnd <= workingMinutes) {
+                ws.tasks.add(task(b, "MECH", mechStart, mechEnd));
+                workerTimes[workerIndex] = mechEnd;
+                continue;
+                }
+            }
+                //prep
+                ws.tasks.add(task(b, "PREP", startPrep, endPrep));
+                //worker free after prep
+                workerTimes[workerIndex] = endPrep;
+                //discharge
+                ds.tasks.add(task(b, "DISCHARGE", startDischarge, endDischarge));
                 deviceTimes.put(bestDevice.getName(), endDischarge);
+                
+                // =========================
+                // 🔥 MECH (PIPELINE SAFE)
+                // =========================
+
+                // worker tekee MECH kun mahdollista (ei blokkaa PREP flow'ta)
+                double mechStart = Math.max(workerTimes[workerIndex], endDischarge);
+                double mechEnd = mechStart + mech;
+
+                if (mechEnd <= workingMinutes) {
+                ws.tasks.add(task(b, "MECH", mechStart, mechEnd));
+                workerTimes[workerIndex] = mechEnd;
+                }
 
                 workerUsed += prep + mech;
                 deviceUsed += discharge;
