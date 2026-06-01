@@ -37,16 +37,21 @@ public class ProcessingController {
         List<Battery> batteries = batteryRepo.findAll();
         List<Device> devices = deviceRepo.findAll();
 
-        return service.optimize(
+        ProcessingOptimizationService.Result result = service.optimize(
                 batteries,
                 devices,
                 req.workers,
                 req.workingMinutes
         );
+
+        // 🔥 TALLENNA viimeisin suunnitelma
+        service.setLastResult(result);
+
+        return result;
     }
 
     @PostMapping("/confirm")
-    public void confirm(@RequestBody List<Long> ids) {
+    public ConfirmResponse confirm(@RequestBody List<Long> ids) {
 
         List<Battery> batteries = batteryRepo.findAllById(ids);
 
@@ -59,14 +64,20 @@ public class ProcessingController {
         }
 
         batteryRepo.saveAll(batteries);
+
+        ConfirmResponse response = new ConfirmResponse();
+        response.message = "confirmed - batteries moved to processing area virtual storage";
+        response.movedBatteryIds = batteries.stream().map(Battery::getId).toList();
+
+        return response;
     }
 
     // =========================
-    // 🔹 CONFIRM ALL (uusi)
+    // 🔹 CONFIRM ALL
     // =========================
 
     @PostMapping("/confirm-all")
-    public void confirmAll() {
+    public ConfirmResponse confirmAll() {
 
         List<Battery> batteries = batteryRepo.findAll();
 
@@ -85,10 +96,25 @@ public class ProcessingController {
         }
 
         batteryRepo.saveAll(toProcess);
+
+        ConfirmResponse response = new ConfirmResponse();
+        response.message = "confirmed - batteries moved to processing area virtual storage";
+        response.movedBatteryIds = toProcess.stream().map(Battery::getId).toList();
+
+        return response;
     }
 
     public static class Request {
         public int workers;
         public int workingMinutes;
+    }
+
+    // =========================
+    // 🔥 RESPONSE DTO
+    // =========================
+
+    public static class ConfirmResponse {
+        public String message;
+        public List<Long> movedBatteryIds;
     }
 }
