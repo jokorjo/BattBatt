@@ -277,13 +277,18 @@ public class ProcessingOptimizationService {
                 int workerIndex = getFreeWorker(workerTimes);
                 WorkerSchedule ws = workerSchedules.get(workerIndex);
 
-                Device bestDevice = findBestDevice(b, devices);
+                Device bestDevice = findBestDevice(b, devices, deviceTimes, workingMinutes);
+
+                if (bestDevice == null) {
+                continue; // 🔥 mikään laite ei mahdu tälle akulle
+                }
+
                 DeviceSchedule ds = deviceSchedules.get(bestDevice.getName());
 
                 double prep = b.getBatteryType().getPreparationTime();
                 double mech = b.getBatteryType().getMechanicalTime();
                 double discharge = getBestDischarge(b, devices);
-
+                
                 double startPrep = workerTimes[workerIndex];
                 double endPrep = startPrep + prep;
 
@@ -342,11 +347,6 @@ public class ProcessingOptimizationService {
         return t;
     }
 
-    private Device findBestDevice(Battery b, List<Device> devices) {
-        return devices.stream()
-                .min(Comparator.comparing(d -> calculateDischarge(b, d)))
-                .orElse(null);
-    }
 
     private double getBestDischarge(Battery b, List<Device> devices) {
         return devices.stream()
@@ -372,5 +372,22 @@ public class ProcessingOptimizationService {
         double usedAmps = Math.min(deviceMaxAmps, ah);
 
         return (ah * 0.9 / usedAmps) * 60;
+    }
+    
+    private Device findBestDevice(Battery b,
+                             List<Device> devices,
+                             Map<String, Double> deviceTimes,
+                             int workingMinutes) {
+
+    return devices.stream()
+            // 🔥 vain laitteet joilla kapasiteettia jäljellä
+            .filter(d -> {
+                double discharge = calculateDischarge(b, d);
+                double current = deviceTimes.get(d.getName());
+                return current + discharge <= workingMinutes;
+            })
+            // 🔥 valitaan nopein näistä
+            .min(Comparator.comparing(d -> calculateDischarge(b, d)))
+            .orElse(null);
     }
 }
