@@ -108,7 +108,56 @@ public class ProcessingController {
         public int workers;
         public int workingMinutes;
     }
+    
+    // =========================
+// 🔹 WORKER SUMMARY
+// =========================
 
+@GetMapping("/worker-summary")
+public List<WorkerSummary> workerSummary() {
+
+    ProcessingOptimizationService.Result last = service.getLastResult();
+
+    if (last == null || last.workers == null) return List.of();
+
+    return last.workers.stream().map(ws -> {
+        WorkerSummary s = new WorkerSummary();
+        s.workerId = ws.workerId;
+        s.taskCount = ws.tasks.size();
+
+        s.totalTime = ws.tasks.stream()
+                .mapToDouble(t -> t.end - t.start)
+                .sum();
+
+        s.tasks = ws.tasks;
+        return s;
+    }).toList();
+}
+    
+// =========================
+// 🔹 DEVICE SUMMARY
+// =========================
+
+@GetMapping("/device-summary")
+public List<DeviceSummary> deviceSummary() {
+
+    ProcessingOptimizationService.Result last = service.getLastResult();
+
+    if (last == null || last.devices == null) return List.of();
+
+    return last.devices.stream().map(ds -> {
+        DeviceSummary s = new DeviceSummary();
+        s.deviceName = ds.deviceName;
+        s.taskCount = ds.tasks.size();
+
+        s.totalTime = ds.tasks.stream()
+                .mapToDouble(t -> t.end - t.start)
+                .sum();
+
+        s.tasks = ds.tasks;
+        return s;
+    }).toList();
+}
     // =========================
     // 🔥 RESPONSE DTO
     // =========================
@@ -117,4 +166,25 @@ public class ProcessingController {
         public String message;
         public List<Long> movedBatteryIds;
     }
+    // =========================
+// 🔹 WORKER SUMMARY DTO
+// =========================
+
+public static class WorkerSummary {
+    public int workerId;
+    public int taskCount;
+    public double totalTime;
+    public List<ProcessingOptimizationService.Task> tasks;
+}
+
+// =========================
+// 🔹 DEVICE SUMMARY DTO
+// =========================
+
+public static class DeviceSummary {
+    public String deviceName;
+    public int taskCount;
+    public double totalTime;
+    public List<ProcessingOptimizationService.Task> tasks;
+}
 }
