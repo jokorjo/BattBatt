@@ -47,6 +47,9 @@ public class DataLoader {
             
                 // 🔥 PROCESSING AREA
                 createProcessingStorage(storageRepo, slotRepo, "Processing Area");
+
+                // 🔥 OUTBOUND AREA
+                createProcessingStorage(storageRepo, slotRepo, "Outbound");
             }
 
             // =========================
