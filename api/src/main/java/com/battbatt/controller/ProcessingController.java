@@ -85,7 +85,7 @@ public class ProcessingController {
             throw new RuntimeException("No optimization result available. Run /optimize first.");
         }
 
-        List<Battery> toProcess = last.getSelected();
+        List<Battery> toProcess = last.selected;
 
         StorageSlot processingSlot =
                 slotRepo.findByStorageName("Processing Area");
