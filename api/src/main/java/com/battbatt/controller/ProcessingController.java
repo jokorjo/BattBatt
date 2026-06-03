@@ -73,19 +73,19 @@ public class ProcessingController {
     }
 
     // =========================
-    // 🔹 CONFIRM ALL
+    // 🔹 CONFIRM ALL (FIXED)
     // =========================
 
     @PostMapping("/confirm-all")
     public ConfirmResponse confirmAll() {
 
-        List<Battery> batteries = batteryRepo.findAll();
+        ProcessingOptimizationService.Result last = service.getLastResult();
 
-        List<Battery> toProcess = batteries.stream()
-                .filter(b -> b.getStorageSlot() != null)
-                .filter(Battery::isPinned)
-                .filter(b -> !b.isInProcessing())
-                .toList();
+        if (last == null || last.getSelected() == null || last.getSelected().isEmpty()) {
+            throw new RuntimeException("No optimization result available. Run /optimize first.");
+        }
+
+        List<Battery> toProcess = last.getSelected();
 
         StorageSlot processingSlot =
                 slotRepo.findByStorageName("Processing Area");
@@ -98,7 +98,7 @@ public class ProcessingController {
         batteryRepo.saveAll(toProcess);
 
         ConfirmResponse response = new ConfirmResponse();
-        response.message = "confirmed - batteries moved to processing area virtual storage";
+        response.message = "confirmed - optimized batteries moved to processing area";
         response.movedBatteryIds = toProcess.stream().map(Battery::getId).toList();
 
         return response;
@@ -108,56 +108,57 @@ public class ProcessingController {
         public int workers;
         public int workingMinutes;
     }
-    
+
     // =========================
-// 🔹 WORKER SUMMARY
-// =========================
+    // 🔹 WORKER SUMMARY
+    // =========================
 
-@GetMapping("/worker-summary")
-public List<WorkerSummary> workerSummary() {
+    @GetMapping("/worker-summary")
+    public List<WorkerSummary> workerSummary() {
 
-    ProcessingOptimizationService.Result last = service.getLastResult();
+        ProcessingOptimizationService.Result last = service.getLastResult();
 
-    if (last == null || last.workers == null) return List.of();
+        if (last == null || last.workers == null) return List.of();
 
-    return last.workers.stream().map(ws -> {
-        WorkerSummary s = new WorkerSummary();
-        s.workerId = ws.workerId;
-        s.taskCount = ws.tasks.size();
+        return last.workers.stream().map(ws -> {
+            WorkerSummary s = new WorkerSummary();
+            s.workerId = ws.workerId;
+            s.taskCount = ws.tasks.size();
 
-        s.totalTime = ws.tasks.stream()
-                .mapToDouble(t -> t.end - t.start)
-                .sum();
+            s.totalTime = ws.tasks.stream()
+                    .mapToDouble(t -> t.end - t.start)
+                    .sum();
 
-        s.tasks = ws.tasks;
-        return s;
-    }).toList();
-}
-    
-// =========================
-// 🔹 DEVICE SUMMARY
-// =========================
+            s.tasks = ws.tasks;
+            return s;
+        }).toList();
+    }
 
-@GetMapping("/device-summary")
-public List<DeviceSummary> deviceSummary() {
+    // =========================
+    // 🔹 DEVICE SUMMARY
+    // =========================
 
-    ProcessingOptimizationService.Result last = service.getLastResult();
+    @GetMapping("/device-summary")
+    public List<DeviceSummary> deviceSummary() {
 
-    if (last == null || last.devices == null) return List.of();
+        ProcessingOptimizationService.Result last = service.getLastResult();
 
-    return last.devices.stream().map(ds -> {
-        DeviceSummary s = new DeviceSummary();
-        s.deviceName = ds.deviceName;
-        s.taskCount = ds.tasks.size();
+        if (last == null || last.devices == null) return List.of();
 
-        s.totalTime = ds.tasks.stream()
-                .mapToDouble(t -> t.end - t.start)
-                .sum();
+        return last.devices.stream().map(ds -> {
+            DeviceSummary s = new DeviceSummary();
+            s.deviceName = ds.deviceName;
+            s.taskCount = ds.tasks.size();
 
-        s.tasks = ds.tasks;
-        return s;
-    }).toList();
-}
+            s.totalTime = ds.tasks.stream()
+                    .mapToDouble(t -> t.end - t.start)
+                    .sum();
+
+            s.tasks = ds.tasks;
+            return s;
+        }).toList();
+    }
+
     // =========================
     // 🔥 RESPONSE DTO
     // =========================
@@ -166,25 +167,26 @@ public List<DeviceSummary> deviceSummary() {
         public String message;
         public List<Long> movedBatteryIds;
     }
+
     // =========================
-// 🔹 WORKER SUMMARY DTO
-// =========================
+    // 🔹 WORKER SUMMARY DTO
+    // =========================
 
-public static class WorkerSummary {
-    public int workerId;
-    public int taskCount;
-    public double totalTime;
-    public List<ProcessingOptimizationService.Task> tasks;
-}
+    public static class WorkerSummary {
+        public int workerId;
+        public int taskCount;
+        public double totalTime;
+        public List<ProcessingOptimizationService.Task> tasks;
+    }
 
-// =========================
-// 🔹 DEVICE SUMMARY DTO
-// =========================
+    // =========================
+    // 🔹 DEVICE SUMMARY DTO
+    // =========================
 
-public static class DeviceSummary {
-    public String deviceName;
-    public int taskCount;
-    public double totalTime;
-    public List<ProcessingOptimizationService.Task> tasks;
-}
+    public static class DeviceSummary {
+        public String deviceName;
+        public int taskCount;
+        public double totalTime;
+        public List<ProcessingOptimizationService.Task> tasks;
+    }
 }
