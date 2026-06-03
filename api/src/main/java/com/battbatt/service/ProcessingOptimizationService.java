@@ -270,8 +270,6 @@ public class ProcessingOptimizationService {
                 normalBatteries.remove(bestBattery);
             }
 
-            selected.addAll(batch);
-
             for (Battery b : batch) {
 
             int workerIndex = getFreeWorker(workerTimes);
@@ -298,6 +296,7 @@ public class ProcessingOptimizationService {
             // 🔥 akku ei saa jäädä kesken päivän
             if (endMech > workingMinutes) {
             continue;
+            selected.add(b);
             }
 
             // =========================
