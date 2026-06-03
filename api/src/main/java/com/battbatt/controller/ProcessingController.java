@@ -103,7 +103,44 @@ public class ProcessingController {
 
         return response;
     }
+        @PostMapping("/ready/{id}")
+        public ConfirmResponse markReady(@PathVariable Long id) {
 
+        Battery b = batteryRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Battery not found"));
+
+        if (!b.isInProcessing()) {
+        throw new RuntimeException("Battery not in processing");
+        }
+
+        StorageSlot outbound =
+            slotRepo.findByStorageName("Outbound");
+
+        b.setInProcessing(false);
+        b.setStorageSlot(outbound);
+
+        batteryRepo.save(b);
+
+        ConfirmResponse response = new ConfirmResponse();
+        response.message = "battery moved to outbound";
+        response.movedBatteryIds = List.of(b.getId());
+
+        return response;
+}
+     @PostMapping("/shipped/{id}")
+        public ConfirmResponse markShipped(@PathVariable Long id) {
+
+        Battery b = batteryRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Battery not found"));
+
+        batteryRepo.delete(b);
+
+        ConfirmResponse response = new ConfirmResponse();
+        response.message = "battery shipped and removed";
+        response.movedBatteryIds = List.of(id);
+
+        return response;
+}
     public static class Request {
         public int workers;
         public int workingMinutes;
