@@ -25,129 +25,89 @@ public class StorageOptimizationService {
         // 🔥 1. INITIAL ASSIGNMENT (vain uusille!)
         for (Battery b : batteries) {
 
-            // 🔒 SKIP jos jo lukittu
             if (b.isPinned()) continue;
-
             if (b.getBatteryType() == null) continue;
 
+            StorageSlot bestPrimary = null;
             StorageSlot fallbackOpen = null;
+            StorageSlot fallbackOverflow = null;
+
+            String batteryChem = b.getBatteryType().getChemistry();
+            String batteryType = b.getBatteryType().getType();
 
             for (StorageSlot s : slots) {
 
                 if (s.getStorage() == null) continue;
 
                 String storageChem = s.getStorage().getChemistry();
-                String batteryChem = b.getBatteryType().getChemistry();
-
                 String storageType = s.getStorage().getStorageType();
-                String batteryType = b.getBatteryType().getType();
 
-                // =========================
-                // 🔥 MINIMAL FIX: ESTÄ PROCESSING AREA
-                // =========================
+                // ❌ estä processing
                 if (storageType.equalsIgnoreCase("PROCESSING")) continue;
 
-                // =========================
-                // 🔥 HARD RULES (TÄRKEIN FIX)
-                // =========================
+                // ❌ capacity check
+                if (s.getBatteries().size() >= s.getCapacity()) continue;
 
-                // ❌ ESTÄ väärä chemistry
                 boolean chemistryMatch =
                         storageChem.equalsIgnoreCase("ANY") ||
                         storageChem.equalsIgnoreCase(batteryChem);
 
-                if (!chemistryMatch) continue;
+                // =========================
+                // 🔥 PRIMARY (STRICT)
+                // =========================
+                boolean primaryMatch =
+                        chemistryMatch &&
+                        (
+                            (batteryType.equalsIgnoreCase("PACK") &&
+                             storageType.equalsIgnoreCase("PACK"))
+                         || (batteryType.equalsIgnoreCase("MODULE") &&
+                             storageType.equalsIgnoreCase("PALLET"))
+                        );
 
-                // ❌ ESTÄ väärä type
-                boolean typeMatch =
-                        (batteryType.equalsIgnoreCase("PACK") &&
-                         storageType.equalsIgnoreCase("PACK"))
-                     || (batteryType.equalsIgnoreCase("MODULE") &&
-                         storageType.equalsIgnoreCase("PALLET"))
-                     || storageType.equalsIgnoreCase("OPEN"); // OPEN sallitaan fallbackiksi
+                if (primaryMatch) {
 
-                if (!typeMatch) continue;
+                    // ❌ estä overflow primaryssa
+                    if (storageType.equalsIgnoreCase("OVERFLOW")) continue;
 
-                // ❌ ESTÄ Critical vääriltä akuilta
-                if (s.getStorage().getName().equalsIgnoreCase("Critical Storage")
-                        && !b.getClassification().equalsIgnoreCase("CRITICAL")) {
-                    continue;
+                    // ❌ critical check
+                    if (s.getStorage().getName().equalsIgnoreCase("Critical Storage")
+                            && !b.getClassification().equalsIgnoreCase("CRITICAL")) {
+                        continue;
+                    }
+
+                    bestPrimary = s;
+                    break; // paras löytyi → stop
                 }
 
-                // ❌ ESTÄ Overflow tässä vaiheessa
-                if (storageType.equalsIgnoreCase("OVERFLOW")) {
-                    continue;
-                }
-
-                // 🔥 ENSISIJAINEN VALINTA
-                b.setStorageSlot(s);
-                break;
-            }
-
-            // =========================
-            // 🔥 FALLBACK (OPEN ONLY)
-            // =========================
-
-            if (b.getStorageSlot() == null) {
-
-                for (StorageSlot s : slots) {
-
-                    if (s.getStorage() == null) continue;
-
-                    String storageType = s.getStorage().getStorageType();
-
-                    // 🔥 ESTÄ PROCESSING
-                    if (storageType.equalsIgnoreCase("PROCESSING")) continue;
-
-                    if (storageType.equalsIgnoreCase("OPEN")) {
-
-                        boolean chemistryMatch =
-                                s.getStorage().getChemistry().equalsIgnoreCase("ANY") ||
-                                s.getStorage().getChemistry().equalsIgnoreCase(
-                                        b.getBatteryType().getChemistry()
-                                );
-
-                        if (chemistryMatch) {
-                            fallbackOpen = s;
-                            break;
-                        }
+                // =========================
+                // 🔥 OPEN FALLBACK
+                // =========================
+                if (storageType.equalsIgnoreCase("OPEN") && chemistryMatch) {
+                    if (fallbackOpen == null) {
+                        fallbackOpen = s;
                     }
                 }
 
-                if (fallbackOpen != null) {
-                    b.setStorageSlot(fallbackOpen);
+                // =========================
+                // 🔥 OVERFLOW FALLBACK
+                // =========================
+                if (storageType.equalsIgnoreCase("OVERFLOW") && chemistryMatch) {
+                    if (fallbackOverflow == null) {
+                        fallbackOverflow = s;
+                    }
                 }
             }
 
             // =========================
-            // 🔥 VIIMEINEN FALLBACK (OVERFLOW)
+            // 🔥 FINAL DECISION
             // =========================
 
-            if (b.getStorageSlot() == null) {
-
-                for (StorageSlot s : slots) {
-
-                    if (s.getStorage() == null) continue;
-
-                    String storageType = s.getStorage().getStorageType();
-
-                    // 🔥 ESTÄ PROCESSING
-                    if (storageType.equalsIgnoreCase("PROCESSING")) continue;
-
-                    if (storageType.equalsIgnoreCase("OVERFLOW")) {
-
-                        boolean chemistryMatch =
-                                s.getStorage().getChemistry().equalsIgnoreCase("ANY") ||
-                                s.getStorage().getChemistry().equalsIgnoreCase(
-                                        b.getBatteryType().getChemistry()
-                                );
-
-                        if (chemistryMatch) {
-                            b.setStorageSlot(s);
-                            break;
-                        }
-                    }
-                }
+            if (bestPrimary != null) {
+                b.setStorageSlot(bestPrimary);
+            } else if (fallbackOpen != null) {
+                b.setStorageSlot(fallbackOpen);
+            } else if (fallbackOverflow != null) {
+                b.setStorageSlot(fallbackOverflow);
             }
         }
 
