@@ -102,8 +102,7 @@ public class ProcessingOptimizationService {
             } else {
                 normalBatteries.add(b);
             }
-        
-
+        }
         // =========================
         // 70% PALLET RULE
         // =========================
@@ -138,8 +137,6 @@ public class ProcessingOptimizationService {
 
         // 🔥 nyt tämä on ainoa lista jota käytetään
         normalBatteries = new ArrayList<>(finalBatteries);
-            }
-        }
 
         // =========================
         // SCHEDULE STRUCTURES
