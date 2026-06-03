@@ -296,8 +296,10 @@ public class ProcessingOptimizationService {
             // 🔥 akku ei saa jäädä kesken päivän
             if (endMech > workingMinutes) {
             continue;
-            selected.add(b);
             }
+                
+            selected.add(b);
+            
 
             // =========================
             // PREP
