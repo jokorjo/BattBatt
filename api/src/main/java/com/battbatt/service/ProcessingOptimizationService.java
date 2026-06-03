@@ -102,7 +102,7 @@ public class ProcessingOptimizationService {
             } else {
                 normalBatteries.add(b);
             }
-        }
+        
 
         // =========================
         // 70% PALLET RULE
