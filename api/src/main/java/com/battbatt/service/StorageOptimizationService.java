@@ -32,66 +32,70 @@ public class StorageOptimizationService {
             StorageSlot fallbackOpen = null;
             StorageSlot fallbackOverflow = null;
 
-            String batteryChem = b.getBatteryType().getChemistry();
-            String batteryType = b.getBatteryType().getType();
-
             for (StorageSlot s : slots) {
 
                 if (s.getStorage() == null) continue;
 
                 String storageChem = s.getStorage().getChemistry();
+                String batteryChem = b.getBatteryType().getChemistry();
+
                 String storageType = s.getStorage().getStorageType();
+                String batteryType = b.getBatteryType().getType();
 
                 // ❌ estä processing
                 if (storageType.equalsIgnoreCase("PROCESSING")) continue;
 
-                // ❌ capacity check
-                if (s.getBatteries().size() >= s.getCapacity()) continue;
+                // ❌ capacity check (ILMAN getBatteries)
+                long count = batteries.stream()
+                        .filter(x -> x.getStorageSlot() != null)
+                        .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                        .count();
+
+                if (count >= s.getCapacity()) continue;
 
                 boolean chemistryMatch =
                         storageChem.equalsIgnoreCase("ANY") ||
                         storageChem.equalsIgnoreCase(batteryChem);
 
-                // =========================
-                // 🔥 PRIMARY (STRICT)
-                // =========================
-                boolean primaryMatch =
-                        chemistryMatch &&
-                        (
-                            (batteryType.equalsIgnoreCase("PACK") &&
-                             storageType.equalsIgnoreCase("PACK"))
-                         || (batteryType.equalsIgnoreCase("MODULE") &&
-                             storageType.equalsIgnoreCase("PALLET"))
-                        );
+                if (!chemistryMatch) continue;
 
-                if (primaryMatch) {
+                boolean typeMatch =
+                        (batteryType.equalsIgnoreCase("PACK") &&
+                         storageType.equalsIgnoreCase("PACK"))
+                     || (batteryType.equalsIgnoreCase("MODULE") &&
+                         storageType.equalsIgnoreCase("PALLET"));
 
-                    // ❌ estä overflow primaryssa
-                    if (storageType.equalsIgnoreCase("OVERFLOW")) continue;
+                if (!typeMatch) continue;
 
-                    // ❌ critical check
-                    if (s.getStorage().getName().equalsIgnoreCase("Critical Storage")
-                            && !b.getClassification().equalsIgnoreCase("CRITICAL")) {
-                        continue;
-                    }
-
-                    bestPrimary = s;
-                    break; // paras löytyi → stop
+                // ❌ estä väärä critical
+                if (s.getStorage().getName().equalsIgnoreCase("Critical Storage")
+                        && !b.getClassification().equalsIgnoreCase("CRITICAL")) {
+                    continue;
                 }
 
                 // =========================
-                // 🔥 OPEN FALLBACK
+                // 🔥 PRIMARY (EI OPEN, EI OVERFLOW)
                 // =========================
-                if (storageType.equalsIgnoreCase("OPEN") && chemistryMatch) {
+                if (!storageType.equalsIgnoreCase("OPEN")
+                        && !storageType.equalsIgnoreCase("OVERFLOW")) {
+
+                    bestPrimary = s;
+                    break;
+                }
+
+                // =========================
+                // 🔥 FALLBACK OPEN
+                // =========================
+                if (storageType.equalsIgnoreCase("OPEN")) {
                     if (fallbackOpen == null) {
                         fallbackOpen = s;
                     }
                 }
 
                 // =========================
-                // 🔥 OVERFLOW FALLBACK
+                // 🔥 FALLBACK OVERFLOW
                 // =========================
-                if (storageType.equalsIgnoreCase("OVERFLOW") && chemistryMatch) {
+                if (storageType.equalsIgnoreCase("OVERFLOW")) {
                     if (fallbackOverflow == null) {
                         fallbackOverflow = s;
                     }
@@ -99,9 +103,8 @@ public class StorageOptimizationService {
             }
 
             // =========================
-            // 🔥 FINAL DECISION
+            // 🔥 FINAL VALINTA
             // =========================
-
             if (bestPrimary != null) {
                 b.setStorageSlot(bestPrimary);
             } else if (fallbackOpen != null) {
