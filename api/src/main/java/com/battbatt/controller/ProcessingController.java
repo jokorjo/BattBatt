@@ -81,7 +81,7 @@ public class ProcessingController {
 
         ProcessingOptimizationService.Result last = service.getLastResult();
 
-        if (last == null || last.getSelected() == null || last.getSelected().isEmpty()) {
+        if (last == null || last.selected == null || last.selected.isEmpty()) {
             throw new RuntimeException("No optimization result available. Run /optimize first.");
         }
 
