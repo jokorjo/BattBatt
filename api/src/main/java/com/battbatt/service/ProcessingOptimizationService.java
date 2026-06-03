@@ -112,14 +112,32 @@ public class ProcessingOptimizationService {
 
         for (Map.Entry<Long, List<Battery>> entry : palletGroups.entrySet()) {
 
-            List<Battery> group = entry.getValue();
+        List<Battery> group = entry.getValue();
             double capacity = group.get(0).getStorageSlot().getCapacity();
 
             double fillRate = (double) group.size() / capacity;
 
-            // Only process pallets that are sufficiently filled
             if (fillRate >= 0.7) {
-                validPallets.add(group);
+            validPallets.add(group);
+            }
+        }
+
+        // =========================
+        // 🔥 FINAL BATTERY POOL (FIX)
+        // =========================
+
+        List<Battery> finalBatteries = new ArrayList<>();
+
+        // valid palletit mukaan
+        for (List<Battery> pallet : validPallets) {
+        finalBatteries.addAll(pallet);
+        }
+
+        // muut akut mukaan
+        finalBatteries.addAll(normalBatteries);
+
+        // 🔥 nyt tämä on ainoa lista jota käytetään
+        normalBatteries = new ArrayList<>(finalBatteries);
             }
         }
 
