@@ -98,7 +98,6 @@ public class StorageOptimizationService {
                          storageType.equalsIgnoreCase("PALLET"));
 
                 if (!typeMatch) continue;
-                }
 
                 // =========================
                 // 🔥 PRIMARY (EI OPEN, EI OVERFLOW)
