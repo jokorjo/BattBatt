@@ -42,7 +42,6 @@ function addBattery() {
   };
 
   batteriesToAdd.push(battery);
-
   document.getElementById("barcode").value = "";
 
   renderBatteryList();
@@ -70,7 +69,31 @@ function renderBatteryList() {
 }
 
 // =========================
-// BULK + OPTIMIZE
+// RENDER INSERTED BATTERIES
+// =========================
+function renderInserted(data) {
+  const tbody = document.querySelector("#insertedTable tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  data.forEach(b => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${b.barcode}</td>
+      <td>${b.batteryType.name}</td>
+      <td>${b.batteryType.chemistry}</td>
+      <td>${b.classification}</td>
+      <td>${b.storageSlot ? b.storageSlot.name : "-"}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+// =========================
+// BULK (EI OPTIMIZE)
 // =========================
 async function bulkInsert() {
   if (batteriesToAdd.length === 0) {
@@ -79,10 +102,9 @@ async function bulkInsert() {
   }
 
   const ok = confirm("Are you sure info is right?");
-
   if (!ok) return;
 
-  await fetch(`${BASE}/batteries/bulk`, {
+  const res = await fetch(`${BASE}/batteries/bulk`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -90,12 +112,28 @@ async function bulkInsert() {
     body: JSON.stringify(batteriesToAdd)
   });
 
+  const data = await res.json();
+
+  renderInserted(data);
+
   batteriesToAdd = [];
   renderBatteryList();
 
-  await optimize();
+  alert("Batteries added");
+}
 
-  alert("Batteries added and optimized");
+// =========================
+// OPTIMIZE STORAGE
+// =========================
+async function optimize() {
+  const res = await fetch(`${BASE}/storage/optimize`, {
+    method: "POST"
+  });
+
+  const data = await res.json();
+
+  renderInserted(data);
+  load();
 }
 
 // =========================
@@ -125,7 +163,7 @@ async function load() {
 }
 
 // =========================
-// WORKER SUMMARY
+// PROCESSING + DASHBOARD (unchanged)
 // =========================
 async function loadWorkers() {
   const res = await fetch(`${BASE}/processing/worker-summary`);
@@ -138,20 +176,15 @@ async function loadWorkers() {
 
   data.forEach(w => {
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
       <td>${w.workerName || "Worker"}</td>
       <td>${w.taskCount}</td>
       <td>${w.totalTime.toFixed(2)}</td>
     `;
-
     tbody.appendChild(tr);
   });
 }
 
-// =========================
-// DEVICE SUMMARY
-// =========================
 async function loadDevices() {
   const res = await fetch(`${BASE}/processing/device-summary`);
   const data = await res.json();
@@ -163,52 +196,29 @@ async function loadDevices() {
 
   data.forEach(d => {
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
       <td>${d.deviceName}</td>
       <td>${d.taskCount}</td>
       <td>${d.totalTime.toFixed(2)}</td>
     `;
-
     tbody.appendChild(tr);
   });
 }
 
-// =========================
-// OPTIMIZE STORAGE
-// =========================
-async function optimize() {
-  await fetch(`${BASE}/storage/optimize`, {
-    method: "POST"
-  });
-
-  load();
-}
-
-// =========================
-// PROCESSING
-// =========================
 async function optimizeProcessing() {
   const workers = prompt("Workers?");
   const minutes = prompt("Working minutes?");
 
-  if (!workers || !minutes) {
-    alert("Give both values");
-    return;
-  }
+  if (!workers || !minutes) return;
 
   await fetch(`${BASE}/processing/optimize`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       workers: Number(workers),
       workingMinutes: Number(minutes)
     })
   });
-
-  alert("Processing optimized");
 
   loadWorkers();
   loadDevices();
@@ -218,8 +228,6 @@ async function confirmProcessing() {
   await fetch(`${BASE}/processing/confirm-all`, {
     method: "POST"
   });
-
-  alert("Processing confirmed");
 
   load();
   loadWorkers();
