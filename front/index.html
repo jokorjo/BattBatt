@@ -5,24 +5,98 @@
 </head>
 
 <body>
+
   <h1>Battery Dashboard</h1>
 
-<button onclick="optimize()">Optimize Storage</button>
-<button onclick="optimizeProcessing()">Optimize Processing</button>
-<button onclick="load()">Refresh</button>
-<button onclick="confirmProcessing()">Confirm Processing</button> 
+  <!-- 🔥 NAVIGATION -->
+  <div style="margin-bottom:20px">
+    <button onclick="showPage('main')">Main</button>
+    <button onclick="showPage('storage')">Storage</button>
+    <button onclick="showPage('processing')">Processing</button>
+    <button onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('admin')">Admin</button>
+  </div>
 
-  <table border="1" id="table" style="margin-top:20px">
-    <thead>
-      <tr>
-        <th>Storage</th>
-        <th>Chemistry</th>
-        <th>Weight</th>
-        <th>Count</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- ========================= -->
+  <!-- MAIN PAGE -->
+  <!-- ========================= -->
+  <div id="mainPage">
+    <h2>Main</h2>
+    <p>Welcome to Battery System</p>
+  </div>
+
+  <!-- ========================= -->
+  <!-- STORAGE PAGE -->
+  <!-- ========================= -->
+  <div id="storagePage" style="display:none">
+    <h2>Storage</h2>
+
+    <button onclick="optimize()">Optimize Storage</button>
+    <button onclick="load()">Refresh</button>
+
+    <table border="1" id="table" style="margin-top:20px">
+      <thead>
+        <tr>
+          <th>Storage</th>
+          <th>Chemistry</th>
+          <th>Weight</th>
+          <th>Count</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- ========================= -->
+  <!-- PROCESSING PAGE -->
+  <!-- ========================= -->
+  <div id="processingPage" style="display:none">
+    <h2>Processing</h2>
+
+    <button onclick="optimizeProcessing()">Optimize Processing</button>
+    <button onclick="confirmProcessing()">Confirm Processing</button>
+  </div>
+
+  <!-- ========================= -->
+  <!-- DASHBOARD PAGE -->
+  <!-- ========================= -->
+  <div id="dashboardPage" style="display:none">
+    <h2>Dashboard</h2>
+
+    <h3>Worker Summary</h3>
+    <table border="1" id="workers">
+      <thead>
+        <tr>
+          <th>Worker</th>
+          <th>Tasks</th>
+          <th>Total Time</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>Device Summary</h3>
+    <table border="1" id="devices">
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th>Tasks</th>
+          <th>Total Time</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- ========================= -->
+  <!-- ADMIN PAGE -->
+  <!-- ========================= -->
+  <div id="adminPage" style="display:none">
+    <h2>Admin</h2>
+
+    <button>Add battery type</button>
+    <button>Add storage</button>
+  </div>
 
   <script src="main.js"></script>
 </body>
