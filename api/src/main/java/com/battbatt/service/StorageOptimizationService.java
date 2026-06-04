@@ -22,7 +22,7 @@ public class StorageOptimizationService {
 
     public BatteryPlan solve(List<Battery> batteries, List<StorageSlot> slots) {
 
-        // 🔥 1. INITIAL ASSIGNMENT (vain uusille!)
+        // 🔥 1. INITIAL ASSIGNMENT (only new!)
         for (Battery b : batteries) {
 
             if (b.isPinned()) continue;
@@ -45,7 +45,26 @@ public class StorageOptimizationService {
                 // ❌ estä processing
                 if (storageType.equalsIgnoreCase("PROCESSING")) continue;
 
-                // ❌ capacity check (ILMAN getBatteries)
+                // critical directing
+
+                boolean isCriticalBattery =
+                b.getBatteryType().getClassification().equalsIgnoreCase("CRITICAL");
+
+                boolean isCriticalStorage =
+                s.getStorage().getName().equalsIgnoreCase("Critical Storage");
+
+                // normals not allowed to critical
+                if (!isCriticalBattery && isCriticalStorage) {
+                continue;
+                }
+
+                // critical must go to critical storage
+                if (isCriticalBattery && isCriticalStorage) {
+                bestPrimary = s;
+                break;
+                }
+
+                // ❌ capacity check (without getBatteries)
                 long count = batteries.stream()
                         .filter(x -> x.getStorageSlot() != null)
                         .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
@@ -53,7 +72,7 @@ public class StorageOptimizationService {
 
                 if (count >= s.getCapacity()) continue;
 
-                // 🔥 KEMIA-LOGIIKKA (NMC / LFP / OTHER)
+                // 🔥 Chemistry logic (NMC / LFP / OTHER)
 
                 boolean isBatteryNMC = batteryChem.equalsIgnoreCase("NMC");
                 boolean isBatteryLFP = batteryChem.equalsIgnoreCase("LFP");
