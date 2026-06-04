@@ -1,4 +1,4 @@
-package com.battbatt.service;
+    package com.battbatt.service;
 
 import com.battbatt.entity.Battery;
 import com.battbatt.entity.StorageSlot;
@@ -49,12 +49,17 @@ public class StorageOptimizationService {
                 }
 
                 // ❌ capacity
-                long count = batteries.stream()
-                        .filter(x -> x.getStorageSlot() != null)
-                        .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
-                        .count();
+                double usedCapacity = batteries.stream()
+                .filter(x -> x.getStorageSlot() != null)
+                .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                .mapToDouble(x -> x.getBatteryType().getVolume())
+                .sum();
 
-                if (count >= s.getCapacity()) continue;
+                double newBatteryVolume = b.getBatteryType().getVolume();
+
+                if (usedCapacity + newBatteryVolume > s.getCapacity()) {
+                continue;
+                }
 
                 // 🔥 CRITICAL
                 boolean isCriticalBattery =
@@ -67,13 +72,16 @@ public class StorageOptimizationService {
                                 s.getStorage().getName()
                         );
 
-                // estä normaalit menemästä criticaliin
+                // 🔴 estä STABLE menemästä criticaliin
                 if (!isCriticalBattery && isCriticalStorage) continue;
 
-                // pakota critical akut critical storageen
+                // 🔴 estä CRITICAL menemästä muihin
+                if (isCriticalBattery && !isCriticalStorage) continue;
+
+                // 🔴 pakota CRITICAL → Critical Storage
                 if (isCriticalBattery && isCriticalStorage) {
-                    bestPrimary = s;
-                    break;
+                bestPrimary = s;
+                break;
                 }
 
                 // 🔥 CHEMISTRY
@@ -122,14 +130,18 @@ public class StorageOptimizationService {
 
             // 🔥 FINAL ASSIGNMENT + PIN
             if (bestPrimary != null) {
-                b.setStorageSlot(bestPrimary);
-                b.setPinned(true);
+            b.setStorageSlot(bestPrimary);
+            b.setPinned(true);
             } else if (fallbackOpen != null) {
-                b.setStorageSlot(fallbackOpen);
-                b.setPinned(true);
+            b.setStorageSlot(fallbackOpen);
+            b.setPinned(true);
             } else if (fallbackOverflow != null) {
-                b.setStorageSlot(fallbackOverflow);
-                b.setPinned(true);
+            b.setStorageSlot(fallbackOverflow);
+            b.setPinned(true);
+            } else {
+            throw new RuntimeException(
+            "No storage capacity available for battery: " + b.getBarcode()
+            );
             }
         }
 
