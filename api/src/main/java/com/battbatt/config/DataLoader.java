@@ -38,12 +38,12 @@ public class DataLoader {
                 createPackStorage(storageRepo, slotRepo, "Critical Storage", "ANY");
 
                 // OTHER
-                createPalletStorage(storageRepo, slotRepo, "Other Pallet", "ANY");
+                createPalletStorage(storageRepo, slotRepo, "Other Pallet", "OTHER");
 
                 // OVERFLOW
                 createOverflowStorage(storageRepo, slotRepo, "Overflow NMC", "NMC");
                 createOverflowStorage(storageRepo, slotRepo, "Overflow LFP", "LFP");
-                createOverflowStorage(storageRepo, slotRepo, "Overflow Other", "ANY");
+                createOverflowStorage(storageRepo, slotRepo, "Overflow Other", "OTHER");
             
                 // 🔥 PROCESSING AREA
                 createProcessingStorage(storageRepo, slotRepo, "Processing Area");
