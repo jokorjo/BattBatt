@@ -43,8 +43,18 @@ public class StorageOptimizationService {
                 String batteryType = b.getBatteryType().getType();
 
                 // ❌ estä processing
-                if (storageType.equalsIgnoreCase("PROCESSING")) continue;
+                if (storageType.equalsIgnoreCase("PROCESSING") ||
+                s.getStorage().getName().equalsIgnoreCase("Processing Area")) {
+                continue;
+                }
 
+                 // ❌ capacity check (without getBatteries)
+                long count = batteries.stream()
+                        .filter(x -> x.getStorageSlot() != null)
+                        .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                        .count();
+
+                if (count >= s.getCapacity()) continue;
                 // critical directing
 
                 boolean isCriticalBattery =
@@ -63,14 +73,6 @@ public class StorageOptimizationService {
                 bestPrimary = s;
                 break;
                 }
-
-                // ❌ capacity check (without getBatteries)
-                long count = batteries.stream()
-                        .filter(x -> x.getStorageSlot() != null)
-                        .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
-                        .count();
-
-                if (count >= s.getCapacity()) continue;
 
                 // 🔥 Chemistry logic (NMC / LFP / OTHER)
 
@@ -96,11 +98,6 @@ public class StorageOptimizationService {
                          storageType.equalsIgnoreCase("PALLET"));
 
                 if (!typeMatch) continue;
-
-                // ❌ estä väärä critical
-                if (s.getStorage().getName().equalsIgnoreCase("Critical Storage")
-                        && !b.getClassification().equalsIgnoreCase("CRITICAL")) {
-                    continue;
                 }
 
                 // =========================
