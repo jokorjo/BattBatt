@@ -59,9 +59,19 @@ async function optimizeProcessing() {
   });
 
   alert("Processing optimized");
+loadWorkers();
+  loadDevices();
 }
 
-// =========================
-// INITIAL LOAD
-// =========================
-load();
+/* 🔥 LISÄÄ TÄMÄ TÄHÄN ALLE */
+async function confirmProcessing() {
+  await fetch(`${BASE}/processing/confirm-all`, {
+    method: "POST"
+  });
+
+  alert("Processing confirmed");
+
+  load();
+  loadWorkers();
+  loadDevices();
+}
