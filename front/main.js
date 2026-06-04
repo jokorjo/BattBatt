@@ -13,12 +13,89 @@ function showPage(page) {
     }
   });
 
-  // 🔥 automaattinen data
   if (page === "storage") load();
   if (page === "dashboard") {
     loadWorkers();
     loadDevices();
   }
+}
+
+// =========================
+// BATTERY INPUT LIST
+// =========================
+let batteriesToAdd = [];
+
+function addBattery() {
+  const barcode = document.getElementById("barcode").value;
+  const type = document.getElementById("batteryType").value;
+  const classification = document.getElementById("classification").value;
+
+  if (!barcode) {
+    alert("Enter barcode");
+    return;
+  }
+
+  const battery = {
+    barcode: barcode,
+    batteryType: { id: Number(type) },
+    classification: classification
+  };
+
+  batteriesToAdd.push(battery);
+
+  document.getElementById("barcode").value = "";
+
+  renderBatteryList();
+}
+
+function removeBattery(index) {
+  batteriesToAdd.splice(index, 1);
+  renderBatteryList();
+}
+
+function renderBatteryList() {
+  const ul = document.getElementById("batteryList");
+  ul.innerHTML = "";
+
+  batteriesToAdd.forEach((b, i) => {
+    const li = document.createElement("li");
+
+    li.innerHTML = `
+      ${b.barcode} | Type ${b.batteryType.id} | ${b.classification}
+      <button onclick="removeBattery(${i})">X</button>
+    `;
+
+    ul.appendChild(li);
+  });
+}
+
+// =========================
+// BULK + OPTIMIZE
+// =========================
+async function bulkInsert() {
+  if (batteriesToAdd.length === 0) {
+    alert("No batteries added");
+    return;
+  }
+
+  const ok = confirm("Are you sure info is right?");
+
+  if (!ok) return;
+
+  await fetch(`${BASE}/batteries/bulk`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(batteriesToAdd)
+  });
+
+  batteriesToAdd = [];
+  renderBatteryList();
+
+  await optimize();
+
+  alert("Batteries added and optimized");
 }
 
 // =========================
@@ -109,7 +186,7 @@ async function optimize() {
 }
 
 // =========================
-// OPTIMIZE PROCESSING
+// PROCESSING
 // =========================
 async function optimizeProcessing() {
   const workers = prompt("Workers?");
@@ -137,9 +214,6 @@ async function optimizeProcessing() {
   loadDevices();
 }
 
-// =========================
-// CONFIRM PROCESSING
-// =========================
 async function confirmProcessing() {
   await fetch(`${BASE}/processing/confirm-all`, {
     method: "POST"
@@ -153,7 +227,7 @@ async function confirmProcessing() {
 }
 
 // =========================
-// INITIAL PAGE
+// INIT
 // =========================
 window.onload = function () {
   showPage("main");
