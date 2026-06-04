@@ -70,31 +70,53 @@ public class StorageOptimizationService {
                 // =========================
                 // 🔥 REALISTIC CAPACITY
                 // =========================
+                // =========================
+                // 🔥 VOLUME CHECK (KAIKILLE)
+                // =========================
+                double usedVolume = batteries.stream()
+                    .filter(x -> x.getStorageSlot() != null)
+                    .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                    .mapToDouble(x -> x.getBatteryType().getVolume())
+                    .sum();
 
-                // footprint
-                double newFootprint = b.getBatteryType().getFootprint();
+                double newVolume = b.getBatteryType().getVolume();
 
-                // lattian kapasiteetti
-                double floorCapacity = s.getFloorCapacity();
+                if (usedVolume + newVolume > s.getCapacity()) {
+                continue;
+                }
 
-                // montako mahtuu per kerros
-                int maxPerLayer = (int) Math.floor(floorCapacity / newFootprint);
+                // =========================
+                // 🔥 PACK ONLY: FOOTPRINT + STACK
+                // =========================
+                boolean isPack = "PACK".equalsIgnoreCase(storageType);
 
-                if (maxPerLayer == 0) continue;
+                if (isPack) {
 
-                // nykyinen määrä slotissa
-                long count = batteries.stream()
-                        .filter(x -> x.getStorageSlot() != null)
-                        .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
-                        .count();
+                    // footprint
+                    double newFootprint = b.getBatteryType().getFootprint();
 
-                // max stack
-                int maxStack = s.getMaxStack();
+                    // lattian kapasiteetti
+                    double floorCapacity = s.getFloorCapacity();
 
-                // maksimi kokonaismäärä
-                int maxTotal = maxPerLayer * maxStack;
+                    // montako mahtuu per kerros
+                    int maxPerLayer = (int) Math.floor(floorCapacity / newFootprint);
 
-                if (count >= maxTotal) continue;
+                    if (maxPerLayer == 0) continue;
+
+                    // nykyinen määrä slotissa
+                    long count = batteries.stream()
+                    .filter(x -> x.getStorageSlot() != null)
+                    .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                    .count();
+
+                    // max stack
+                    int maxStack = s.getMaxStack();
+
+                    // maksimi kokonaismäärä
+                    int maxTotal = maxPerLayer * maxStack;
+
+                    if (count >= maxTotal) continue;
+                    }
 
                 // =========================
                 // 🔥 CHEMISTRY
