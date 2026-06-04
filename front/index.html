@@ -27,7 +27,6 @@
   <div id="storagePage" style="display:none">
     <h2>Storage</h2>
 
-    <!-- 🔥 ADD BATTERIES -->
     <h3>Add batteries to storage optimization</h3>
 
     <input id="barcode" placeholder="Barcode" />
@@ -50,11 +49,27 @@
 
     <ul id="batteryList"></ul>
 
-    <button onclick="bulkInsert()">Optimize all batteries</button>
+    <!-- 🔥 MUUTETTU -->
+    <button onclick="bulkInsert()">Bulk</button>
+    <button onclick="optimize()">Optimize Storage</button>
+
+    <!-- 🔥 UUSI TAULUKKO -->
+    <h3>Inserted Batteries</h3>
+    <table border="1" id="insertedTable">
+      <thead>
+        <tr>
+          <th>Barcode</th>
+          <th>Type</th>
+          <th>Chemistry</th>
+          <th>Classification</th>
+          <th>Storage</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
     <hr>
 
-    <button onclick="optimize()">Optimize Storage</button>
     <button onclick="load()">Refresh</button>
 
     <table border="1" id="table" style="margin-top:20px">
@@ -84,25 +99,11 @@
 
     <h3>Worker Summary</h3>
     <table border="1" id="workers">
-      <thead>
-        <tr>
-          <th>Worker</th>
-          <th>Tasks</th>
-          <th>Total Time</th>
-        </tr>
-      </thead>
       <tbody></tbody>
     </table>
 
     <h3>Device Summary</h3>
     <table border="1" id="devices">
-      <thead>
-        <tr>
-          <th>Device</th>
-          <th>Tasks</th>
-          <th>Total Time</th>
-        </tr>
-      </thead>
       <tbody></tbody>
     </table>
   </div>
