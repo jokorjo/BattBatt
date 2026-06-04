@@ -155,4 +155,6 @@ async function confirmProcessing() {
 // =========================
 // INITIAL PAGE
 // =========================
-showPage("main");
+window.onload = function () {
+  showPage("main");
+};
