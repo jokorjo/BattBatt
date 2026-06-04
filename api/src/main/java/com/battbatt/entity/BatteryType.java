@@ -27,9 +27,6 @@ public class BatteryType {
     private int mechanicalTime;
     private int preparationTime;
 
-    // ❌ POISTA TÄMÄ (tärkeä!)
-    // private static final int SCALE = 1000;
-
     // ===== GETTERIT & SETTERIT =====
 
     public Long getId() { return id; }
@@ -75,19 +72,24 @@ public class BatteryType {
     public int getPreparationTime() { return preparationTime; }
     public void setPreparationTime(int preparationTime) { this.preparationTime = preparationTime; }
 
-    // 🔥 TILAVUUS (oikea fysiikka)
+    // 🔥 TILAVUUS
     public double getVolume() {
         return length * width * height;
     }
 
-    // 🔥 KÄYTÄ SAMA SCALE KUIN StorageSlot
-   private static final int SCALE = 1000;
+    // 🔥 UUSI: POHJAPINTA (FOOTPRINT)
+    public double getFootprint() {
+        return length * width;
+    }
 
-public int getScaledVolume() {
-    return (int) Math.round(getVolume() * SCALE);
-}
+    // 🔥 SCALE
+    private static final int SCALE = 1000;
 
-    // 🔥 DEBUG (suosittelen)
+    public int getScaledVolume() {
+        return (int) Math.round(getVolume() * SCALE);
+    }
+
+    // 🔥 DEBUG
     @Override
     public String toString() {
         return "BatteryType{" +
@@ -96,6 +98,7 @@ public int getScaledVolume() {
                 ", type='" + type + '\'' +
                 ", chemistry='" + chemistry + '\'' +
                 ", volume=" + getVolume() +
+                ", footprint=" + getFootprint() +
                 ", scaled=" + getScaledVolume() +
                 '}';
     }
