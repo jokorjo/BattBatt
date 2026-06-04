@@ -53,9 +53,20 @@ public class StorageOptimizationService {
 
                 if (count >= s.getCapacity()) continue;
 
+                // 🔥 KEMIA-LOGIIKKA (NMC / LFP / OTHER)
+
+                boolean isBatteryNMC = batteryChem.equalsIgnoreCase("NMC");
+                boolean isBatteryLFP = batteryChem.equalsIgnoreCase("LFP");
+                boolean isBatteryOther = !isBatteryNMC && !isBatteryLFP;
+                
+                boolean isStorageNMC = storageChem.equalsIgnoreCase("NMC");
+                boolean isStorageLFP = storageChem.equalsIgnoreCase("LFP");
+                boolean isStorageOther = storageChem.equalsIgnoreCase("OTHER");
+
                 boolean chemistryMatch =
-                        storageChem.equalsIgnoreCase("ANY") ||
-                        storageChem.equalsIgnoreCase(batteryChem);
+                (isBatteryNMC && isStorageNMC) ||
+                (isBatteryLFP && isStorageLFP) ||
+                (isBatteryOther && isStorageOther);
 
                 if (!chemistryMatch) continue;
 
