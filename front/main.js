@@ -126,16 +126,20 @@ async function bulkInsert() {
 // OPTIMIZE STORAGE
 // =========================
 async function optimize() {
-  const res = await fetch(`${BASE}/storage/optimize`, {
+  await fetch(`${BASE}/optimize`, {
     method: "POST"
   });
 
+  // 🔥 hae kaikki akut uudestaan
+  const res = await fetch(`${BASE}/batteries`);
   const data = await res.json();
 
+  // 🔥 näytä mihin meni
   renderInserted(data);
+
+  // päivitä summary
   load();
 }
-
 // =========================
 // STORAGE SUMMARY
 // =========================
