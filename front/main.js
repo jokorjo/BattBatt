@@ -24,6 +24,7 @@ function showPage(page) {
 // BATTERY INPUT LIST
 // =========================
 let batteriesToAdd = [];
+let lastInsertedBarcodes = [];
 
 function addBattery() {
   const barcode = document.getElementById("barcode").value;
@@ -114,6 +115,9 @@ async function bulkInsert() {
 
   const data = await res.json();
 
+  // 🔥 TALLENNA NÄMÄ
+  lastInsertedBarcodes = data.map(b => b.barcode);
+
   renderInserted(data);
 
   batteriesToAdd = [];
@@ -130,16 +134,20 @@ async function optimize() {
     method: "POST"
   });
 
-  // 🔥 hae kaikki akut uudestaan
+  // 🔥 hae kaikki akut
   const res = await fetch(`${BASE}/batteries`);
-  const data = await res.json();
+  const all = await res.json();
 
-  // 🔥 näytä mihin meni
-  renderInserted(data);
+  // 🔥 SUODATA VAIN VIIMEKSI LISÄTYT
+  const filtered = all.filter(b =>
+    lastInsertedBarcodes.includes(b.barcode)
+  );
 
-  // päivitä summary
+  renderInserted(filtered);
+
   load();
 }
+
 // =========================
 // STORAGE SUMMARY
 // =========================
@@ -167,7 +175,7 @@ async function load() {
 }
 
 // =========================
-// PROCESSING + DASHBOARD (unchanged)
+// PROCESSING + DASHBOARD
 // =========================
 async function loadWorkers() {
   const res = await fetch(`${BASE}/processing/worker-summary`);
