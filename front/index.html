@@ -8,7 +8,7 @@
 
   <h1>Battery Dashboard</h1>
 
-  <!-- 🔥 NAVIGATION -->
+  <!-- NAVIGATION -->
   <div style="margin-bottom:20px">
     <button onclick="showPage('main')">Main</button>
     <button onclick="showPage('storage')">Storage</button>
@@ -17,19 +17,42 @@
     <button onclick="showPage('admin')">Admin</button>
   </div>
 
-  <!-- ========================= -->
-  <!-- MAIN PAGE -->
-  <!-- ========================= -->
+  <!-- MAIN -->
   <div id="mainPage">
     <h2>Main</h2>
     <p>Welcome to Battery System</p>
   </div>
 
-  <!-- ========================= -->
-  <!-- STORAGE PAGE -->
-  <!-- ========================= -->
+  <!-- STORAGE -->
   <div id="storagePage" style="display:none">
     <h2>Storage</h2>
+
+    <!-- 🔥 ADD BATTERIES -->
+    <h3>Add batteries to storage optimization</h3>
+
+    <input id="barcode" placeholder="Barcode" />
+
+    <select id="batteryType">
+      <option value="1">NMC Pack</option>
+      <option value="2">NMC Pack 2</option>
+      <option value="3">NMC Module</option>
+      <option value="4">LFP Pack</option>
+      <option value="5">LFP Pack 2</option>
+      <option value="6">LFP Module</option>
+    </select>
+
+    <select id="classification">
+      <option value="STABLE">STABLE</option>
+      <option value="CRITICAL">CRITICAL</option>
+    </select>
+
+    <button onclick="addBattery()">Add</button>
+
+    <ul id="batteryList"></ul>
+
+    <button onclick="bulkInsert()">Bulk + Optimize</button>
+
+    <hr>
 
     <button onclick="optimize()">Optimize Storage</button>
     <button onclick="load()">Refresh</button>
@@ -47,9 +70,7 @@
     </table>
   </div>
 
-  <!-- ========================= -->
-  <!-- PROCESSING PAGE -->
-  <!-- ========================= -->
+  <!-- PROCESSING -->
   <div id="processingPage" style="display:none">
     <h2>Processing</h2>
 
@@ -57,9 +78,7 @@
     <button onclick="confirmProcessing()">Confirm Processing</button>
   </div>
 
-  <!-- ========================= -->
-  <!-- DASHBOARD PAGE -->
-  <!-- ========================= -->
+  <!-- DASHBOARD -->
   <div id="dashboardPage" style="display:none">
     <h2>Dashboard</h2>
 
@@ -88,12 +107,9 @@
     </table>
   </div>
 
-  <!-- ========================= -->
-  <!-- ADMIN PAGE -->
-  <!-- ========================= -->
+  <!-- ADMIN -->
   <div id="adminPage" style="display:none">
     <h2>Admin</h2>
-
     <button>Add battery type</button>
     <button>Add storage</button>
   </div>
