@@ -1,5 +1,8 @@
 const BASE = "https://battbatt-1.onrender.com/api";
 
+// =========================
+// LOAD STORAGE SUMMARY
+// =========================
 async function load() {
   const res = await fetch(`${BASE}/batteries/summary`);
   const data = await res.json();
@@ -21,6 +24,9 @@ async function load() {
   });
 }
 
+// =========================
+// OPTIMIZE STORAGE
+// =========================
 async function optimize() {
   await fetch(`${BASE}/storage/optimize`, {
     method: "POST"
@@ -29,11 +35,17 @@ async function optimize() {
   load();
 }
 
-load();
-
+// =========================
+// OPTIMIZE PROCESSING
+// =========================
 async function optimizeProcessing() {
   const workers = prompt("Workers?");
   const minutes = prompt("Working minutes?");
+
+  if (!workers || !minutes) {
+    alert("Give both values");
+    return;
+  }
 
   await fetch(`${BASE}/processing/optimize`, {
     method: "POST",
@@ -48,3 +60,8 @@ async function optimizeProcessing() {
 
   alert("Processing optimized");
 }
+
+// =========================
+// INITIAL LOAD
+// =========================
+load();
