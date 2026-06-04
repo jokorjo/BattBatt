@@ -30,3 +30,21 @@ async function optimize() {
 }
 
 load();
+
+async function optimizeProcessing() {
+  const workers = prompt("Workers?");
+  const minutes = prompt("Working minutes?");
+
+  await fetch(`${BASE}/processing/optimize`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      workers: Number(workers),
+      workingMinutes: Number(minutes)
+    })
+  });
+
+  alert("Processing optimized");
+}
