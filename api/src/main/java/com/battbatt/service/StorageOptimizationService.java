@@ -1,4 +1,4 @@
-    package com.battbatt.service;
+package com.battbatt.service;
 
 import com.battbatt.entity.Battery;
 import com.battbatt.entity.StorageSlot;
@@ -42,49 +42,63 @@ public class StorageOptimizationService {
                 String storageType = s.getStorage().getStorageType();
                 String batteryType = b.getBatteryType().getType();
 
-                // ❌ estä processing kokonaan
+                // ❌ estä processing
                 if ("PROCESSING".equalsIgnoreCase(storageType) ||
                     "Processing Area".equalsIgnoreCase(s.getStorage().getName())) {
                     continue;
                 }
 
-                // ❌ capacity
-                double usedCapacity = batteries.stream()
-                .filter(x -> x.getStorageSlot() != null)
-                .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
-                .mapToDouble(x -> x.getBatteryType().getVolume())
-                .sum();
-
-                double newBatteryVolume = b.getBatteryType().getVolume();
-
-                if (usedCapacity + newBatteryVolume > s.getCapacity()) {
-                continue;
-                }
-
-                // 🔥 CRITICAL
+                // =========================
+                // 🔥 CRITICAL (FIXED)
+                // =========================
                 boolean isCriticalBattery =
-                        "CRITICAL".equalsIgnoreCase(
-                                b.getBatteryType().getClassification()
-                        );
+                        "CRITICAL".equalsIgnoreCase(b.getClassification());
 
                 boolean isCriticalStorage =
                         "Critical Storage".equalsIgnoreCase(
                                 s.getStorage().getName()
                         );
 
-                // 🔴 estä STABLE menemästä criticaliin
                 if (!isCriticalBattery && isCriticalStorage) continue;
-
-                // 🔴 estä CRITICAL menemästä muihin
                 if (isCriticalBattery && !isCriticalStorage) continue;
 
-                // 🔴 pakota CRITICAL → Critical Storage
                 if (isCriticalBattery && isCriticalStorage) {
-                bestPrimary = s;
-                break;
+                    bestPrimary = s;
+                    break;
                 }
 
+                // =========================
+                // 🔥 REALISTIC CAPACITY
+                // =========================
+
+                // footprint
+                double newFootprint = b.getBatteryType().getFootprint();
+
+                // lattian kapasiteetti
+                double floorCapacity = s.getFloorCapacity();
+
+                // montako mahtuu per kerros
+                int maxPerLayer = (int) Math.floor(floorCapacity / newFootprint);
+
+                if (maxPerLayer == 0) continue;
+
+                // nykyinen määrä slotissa
+                long count = batteries.stream()
+                        .filter(x -> x.getStorageSlot() != null)
+                        .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                        .count();
+
+                // max stack
+                int maxStack = s.getMaxStack();
+
+                // maksimi kokonaismäärä
+                int maxTotal = maxPerLayer * maxStack;
+
+                if (count >= maxTotal) continue;
+
+                // =========================
                 // 🔥 CHEMISTRY
+                // =========================
                 boolean isBatteryNMC = "NMC".equalsIgnoreCase(batteryChem);
                 boolean isBatteryLFP = "LFP".equalsIgnoreCase(batteryChem);
                 boolean isBatteryOther = !isBatteryNMC && !isBatteryLFP;
@@ -100,7 +114,9 @@ public class StorageOptimizationService {
 
                 if (!chemistryMatch) continue;
 
+                // =========================
                 // 🔥 TYPE
+                // =========================
                 boolean typeMatch =
                         ("PACK".equalsIgnoreCase(batteryType) &&
                          "PACK".equalsIgnoreCase(storageType))
@@ -109,7 +125,9 @@ public class StorageOptimizationService {
 
                 if (!typeMatch) continue;
 
+                // =========================
                 // 🔥 PRIMARY
+                // =========================
                 if (!"OPEN".equalsIgnoreCase(storageType)
                         && !"OVERFLOW".equalsIgnoreCase(storageType)) {
 
@@ -117,31 +135,34 @@ public class StorageOptimizationService {
                     break;
                 }
 
-                // 🔥 OPEN fallback
+                // =========================
+                // 🔥 FALLBACKS
+                // =========================
                 if ("OPEN".equalsIgnoreCase(storageType)) {
                     if (fallbackOpen == null) fallbackOpen = s;
                 }
 
-                // 🔥 OVERFLOW fallback
                 if ("OVERFLOW".equalsIgnoreCase(storageType)) {
                     if (fallbackOverflow == null) fallbackOverflow = s;
                 }
             }
 
-            // 🔥 FINAL ASSIGNMENT + PIN
+            // =========================
+            // 🔥 FINAL ASSIGNMENT
+            // =========================
             if (bestPrimary != null) {
-            b.setStorageSlot(bestPrimary);
-            b.setPinned(true);
+                b.setStorageSlot(bestPrimary);
+                b.setPinned(true);
             } else if (fallbackOpen != null) {
-            b.setStorageSlot(fallbackOpen);
-            b.setPinned(true);
+                b.setStorageSlot(fallbackOpen);
+                b.setPinned(true);
             } else if (fallbackOverflow != null) {
-            b.setStorageSlot(fallbackOverflow);
-            b.setPinned(true);
+                b.setStorageSlot(fallbackOverflow);
+                b.setPinned(true);
             } else {
-            throw new RuntimeException(
-            "No storage capacity available for battery: " + b.getBarcode()
-            );
+                throw new RuntimeException(
+                        "No storage capacity available for battery: " + b.getBarcode()
+                );
             }
         }
 
