@@ -87,7 +87,7 @@ public class StorageOptimizationService {
                 // =========================
                 double usedVolume = batteries.stream()
                     .filter(x -> x.getStorageSlot() != null)
-                    .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                    .filter(x -> x.getStorageSlot().getName().equals(s.getName()))
                     .mapToDouble(x -> x.getBatteryType().getVolume())
                     .sum();
 
@@ -118,7 +118,7 @@ public class StorageOptimizationService {
                     // nykyinen määrä slotissa
                     long count = batteries.stream()
                     .filter(x -> x.getStorageSlot() != null)
-                    .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
+                    .filter(x -> x.getStorageSlot().getName().equals(s.getName()))
                     .count();
 
                     // max stack
@@ -165,9 +165,7 @@ public class StorageOptimizationService {
                 if (!"OPEN".equalsIgnoreCase(storageType)
                 && !"OVERFLOW".equalsIgnoreCase(storageType)) {
 
-                if (bestPrimary == null) {
                 bestPrimary = s;
-                }
         }
 } // 🔥 closes for (StorageSlot s : slots)
 
