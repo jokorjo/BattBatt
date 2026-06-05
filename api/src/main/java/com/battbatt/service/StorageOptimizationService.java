@@ -169,6 +169,7 @@ public class StorageOptimizationService {
                 bestPrimary = s;
                 }
         }
+} // 🔥 closes for (StorageSlot s : slots)
 
             // =========================
             // 🔥 FINAL ASSIGNMENT
