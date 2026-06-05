@@ -186,7 +186,6 @@ public class StorageOptimizationService {
                 );
             }
         }
-    }
 
         // 🔥 SOLVER
         BatteryPlan problem = new BatteryPlan(batteries, slots);
