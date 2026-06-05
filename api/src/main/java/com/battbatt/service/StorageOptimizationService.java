@@ -49,7 +49,17 @@ public class StorageOptimizationService {
                 "Processing Area".equalsIgnoreCase(s.getStorage().getName())) {
                 continue;
                 }
+                    
+                // =========================
+                // 🔥 FALLBACKS
+                // =========================
+                if ("OPEN".equalsIgnoreCase(storageType)) {
+                    if (fallbackOpen == null) fallbackOpen = s;
+                }
 
+                if ("OVERFLOW".equalsIgnoreCase(storageType)) {
+                    if (fallbackOverflow == null) fallbackOverflow = s;
+                }
                 // =========================
                 // 🔥 CRITICAL (FIXED)
                 // =========================
@@ -66,7 +76,7 @@ public class StorageOptimizationService {
 
                 if (isCriticalBattery && isCriticalStorage) {
                     bestPrimary = s;
-                    break;
+                    continue;
                 }
 
                 // =========================
@@ -142,10 +152,10 @@ public class StorageOptimizationService {
                 // 🔥 TYPE
                 // =========================
                 boolean typeMatch =
-                        ("PACK".equalsIgnoreCase(batteryType) &&
-                         "PACK".equalsIgnoreCase(storageType))
-                     || ("MODULE".equalsIgnoreCase(batteryType) &&
-                         "PALLET".equalsIgnoreCase(storageType));
+                 ("PACK".equalsIgnoreCase(batteryType) &&
+                  "PACK".equalsIgnoreCase(storageType))
+              || ("MODULE".equalsIgnoreCase(batteryType) &&
+                  "PALLET".equalsIgnoreCase(storageType));
 
                 if (!typeMatch) continue;
 
@@ -153,36 +163,22 @@ public class StorageOptimizationService {
                 // 🔥 PRIMARY
                 // =========================
                 if (!"OPEN".equalsIgnoreCase(storageType)
-                        && !"OVERFLOW".equalsIgnoreCase(storageType)) {
+                && !"OVERFLOW".equalsIgnoreCase(storageType)) {
 
-                    bestPrimary = s;
-                    break;
+                if (bestPrimary == null) {
+                bestPrimary = s;
                 }
-
-                // =========================
-                // 🔥 FALLBACKS
-                // =========================
-                if ("OPEN".equalsIgnoreCase(storageType)) {
-                    if (fallbackOpen == null) fallbackOpen = s;
-                }
-
-                if ("OVERFLOW".equalsIgnoreCase(storageType)) {
-                    if (fallbackOverflow == null) fallbackOverflow = s;
-                }
-            }
+        }
 
             // =========================
             // 🔥 FINAL ASSIGNMENT
             // =========================
             if (bestPrimary != null) {
                 b.setStorageSlot(bestPrimary);
-                b.setPinned(true);
             } else if (fallbackOpen != null) {
                 b.setStorageSlot(fallbackOpen);
-                b.setPinned(true);
             } else if (fallbackOverflow != null) {
                 b.setStorageSlot(fallbackOverflow);
-                b.setPinned(true);
             } else {
                 throw new RuntimeException(
                         "No storage capacity available for battery: " + b.getBarcode()
