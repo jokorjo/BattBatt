@@ -22,17 +22,19 @@ public class StorageOptimizationService {
 
     public BatteryPlan solve(List<Battery> batteries, List<StorageSlot> slots) {
 
-        // 🔥 INITIAL ASSIGNMENT
-        for (Battery b : batteries) {
+                // 🔥 INITIAL ASSIGNMENT
+                for (Battery b : batteries) {
 
-            if (b.isPinned()) continue;
-            if (b.getBatteryType() == null) continue;
+                // 🔴 SKIP jos akku on jo varastossa
+                if (b.getStorageSlot() != null) continue;
 
-            StorageSlot bestPrimary = null;
-            StorageSlot fallbackOpen = null;
-            StorageSlot fallbackOverflow = null;
+                if (b.getBatteryType() == null) continue;
 
-            for (StorageSlot s : slots) {
+                StorageSlot bestPrimary = null;
+                StorageSlot fallbackOpen = null;
+                StorageSlot fallbackOverflow = null;
+
+                for (StorageSlot s : slots) {
 
                 if (s.getStorage() == null) continue;
 
@@ -44,8 +46,8 @@ public class StorageOptimizationService {
 
                 // ❌ estä processing
                 if ("PROCESSING".equalsIgnoreCase(storageType) ||
-                    "Processing Area".equalsIgnoreCase(s.getStorage().getName())) {
-                    continue;
+                "Processing Area".equalsIgnoreCase(s.getStorage().getName())) {
+                continue;
                 }
 
                 // =========================
