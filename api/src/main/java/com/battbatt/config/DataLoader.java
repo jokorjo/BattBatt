@@ -185,7 +185,7 @@ public class DataLoader {
             StorageSlot slot = new StorageSlot();
             slot.setName(n);
             slot.setCapacity(10);
-            slot.setFloorCapacity(13.8);
+            slot.setFloorCapacity(12);
             slot.setMaxStack(2);         
             slot.setStorage(s);
             slotRepo.save(slot);
