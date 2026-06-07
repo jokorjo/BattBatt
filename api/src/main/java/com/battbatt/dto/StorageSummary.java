@@ -3,6 +3,7 @@ package com.battbatt.dto;
 public class StorageSummary {
 
     private String storageName;
+    private String slotName;
     private String chemistry;
     private double totalWeight;
     private int batteryCount;
