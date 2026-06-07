@@ -43,64 +43,19 @@ public class Battery {
 
     // ===== GETTERIT & SETTERIT =====
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getBarcode() {
-        return barcode;
-    }
-
-    public void setBarcode(String barcode) {
-        this.barcode = barcode;
-    }
-
-    public String getClassification() {
-        return classification;
-    }
-
-    public void setClassification(String classification) {
-        this.classification = classification;
-    }
-
-    public BatteryType getBatteryType() {
-        return batteryType;
-    }
-
-    public void setBatteryType(BatteryType batteryType) {
-        this.batteryType = batteryType;
-    }
-
-    public StorageSlot getStorageSlot() {
-        return storageSlot;
-    }
-
-    public void setStorageSlot(StorageSlot storageSlot) {
-        this.storageSlot = storageSlot;
-    }
-
-    public boolean isPinned() {
-        return pinned;
-    }
-
-    public void setPinned(boolean pinned) {
-        this.pinned = pinned;
-    }
-
-    public boolean isInProcessing() {
-        return inProcessing;
-    }
-
-    public void setInProcessing(boolean inProcessing) {
-        this.inProcessing = inProcessing;
-    }
-
-    // 🔥 LISÄTTY
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
+    public Long getId() { return id; }
+    public String getBarcode() { return barcode; }
+    public void setBarcode(String barcode) { this.barcode = barcode; }
+    public String getClassification() { return classification; }
+    public void setClassification(String classification) { this.classification = classification; }
+    public BatteryType getBatteryType() { return batteryType; }
+    public void setBatteryType(BatteryType batteryType) { this.batteryType = batteryType; }
+    public StorageSlot getStorageSlot() { return storageSlot; }
+    public void setStorageSlot(StorageSlot storageSlot) { this.storageSlot = storageSlot; }
+    public boolean isPinned() { return pinned; }
+    public void setPinned(boolean pinned) { this.pinned = pinned; }
+    public boolean isInProcessing() { return inProcessing; }
+    public void setInProcessing(boolean inProcessing) { this.inProcessing = inProcessing; }
+    public boolean isLocked() { return locked; }
+    public void setLocked(boolean locked) { this.locked = locked; }
 }
