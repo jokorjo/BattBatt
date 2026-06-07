@@ -24,7 +24,7 @@ public class Battery {
     @ManyToOne
     private BatteryType batteryType;
 
-    // 🔒 PINNED → solver EI saa siirtää jos true
+    // 🔒 PINNED → akku on varastossa ja valmis käsittelyyn
     @PlanningPin
     private boolean pinned = false;
 
@@ -37,6 +37,9 @@ public class Battery {
 
     // 🔥 ONKO AKKU KÄSITTELYSSÄ
     private boolean inProcessing = false;
+
+    // 🔥 ESTÄÄ UUDELLEENSIJOITTELUN (storage optimization)
+    private boolean locked = false;
 
     // ===== GETTERIT & SETTERIT =====
 
@@ -83,12 +86,21 @@ public class Battery {
     public void setPinned(boolean pinned) {
         this.pinned = pinned;
     }
-    
+
     public boolean isInProcessing() {
-    return inProcessing;
+        return inProcessing;
     }
 
     public void setInProcessing(boolean inProcessing) {
-    this.inProcessing = inProcessing;
+        this.inProcessing = inProcessing;
+    }
+
+    // 🔥 LISÄTTY
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }
