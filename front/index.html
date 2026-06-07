@@ -78,6 +78,19 @@
 
   </div>
 
+  <!-- 🔥 LISÄTTY TAKAS → estää crashin -->
+  <div id="processingPage" style="display:none">
+    <h2>Processing</h2>
+  </div>
+
+  <div id="dashboardPage" style="display:none">
+    <h2>Dashboard</h2>
+  </div>
+
+  <div id="adminPage" style="display:none">
+    <h2>Admin</h2>
+  </div>
+
 <script>
 
 let queue = [];
@@ -140,17 +153,14 @@ async function bulkInsert() {
     return;
   }
 
-  const data = await res.json();
-
   queue = [];
   renderQueue();
 
-  // 🔥 tämä riittää — EI muuta
   loadInserted();
 }
 
 /* =========================
-   LOAD INSERTED (ALKUPERÄINEN LOGIIKKA)
+   LOAD INSERTED
 ========================= */
 async function loadInserted() {
 
@@ -162,7 +172,6 @@ async function loadInserted() {
 
   data.forEach(b => {
 
-    // 🔥 TÄMÄ ON OIKEA – EI MUUTETA
     if (!b.storageSlot) {
 
       const row = `
@@ -179,7 +188,7 @@ async function loadInserted() {
 }
 
 /* =========================
-   OPTIMIZE (KORJATTU)
+   OPTIMIZE
 ========================= */
 async function optimize() {
 
@@ -190,13 +199,9 @@ async function optimize() {
     return;
   }
 
-  // 🔥 ÄLÄ tyhjennä DOM manuaalisesti
-  // 🔥 anna backendin määrittää mitä näkyy
-
   queue = [];
   renderQueue();
 
-  // 🔥 päivitä molemmat näkymät
   await load();
   await loadInserted();
 }
@@ -242,21 +247,27 @@ async function load() {
 }
 
 /* =========================
-   NAVIGATION
+   NAVIGATION (FIXED)
 ========================= */
 function showPage(page) {
 
-  document.getElementById("mainPage").style.display = "none";
-  document.getElementById("storagePage").style.display = "none";
-  document.getElementById("processingPage").style.display = "none";
-  document.getElementById("dashboardPage").style.display = "none";
-  document.getElementById("adminPage").style.display = "none";
+  const pages = ["mainPage", "storagePage", "processingPage", "dashboardPage", "adminPage"];
 
-  document.getElementById(page + "Page").style.display = "block";
+  pages.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = "none";
+    }
+  });
+
+  const active = document.getElementById(page + "Page");
+  if (active) {
+    active.style.display = "block";
+  }
 }
 
 /* =========================
-   AUTO LOAD (NEW)
+   AUTO LOAD
 ========================= */
 window.onload = () => {
   load();
