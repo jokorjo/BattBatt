@@ -35,7 +35,7 @@ public class DataLoader {
                 createOpenStorage(storageRepo, slotRepo, "Open LFP", "LFP");
 
                 // CRITICAL
-                createPackStorage(storageRepo, slotRepo, "Critical Storage", "ANY");
+                createPackStorage(storageRepo, slotRepo, "Critical Storage", "CRITICAL");
 
                 // OTHER
                 createPalletStorage(storageRepo, slotRepo, "Other Pallet", "OTHER");
