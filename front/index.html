@@ -9,7 +9,7 @@
   <h1>Battery Dashboard</h1>
 
   <!-- NAVIGATION -->
-  <div style="margin-bottom:20px">
+  <div style="margin-bottom:30px">
     <button onclick="showPage('main')">Main</button>
     <button onclick="showPage('storage')">Storage</button>
     <button onclick="showPage('processing')">Processing</button>
@@ -49,11 +49,9 @@
 
     <ul id="batteryList"></ul>
 
-    <!-- 🔥 MUUTETTU -->
     <button onclick="bulkInsert()">Bulk</button>
-    <button onclick="optimize()">Optimize Storage</button>
 
-    <!-- 🔥 UUSI TAULUKKO -->
+    <!-- 🔥 INSERTED -->
     <h3>Inserted Batteries</h3>
     <table border="1" id="insertedTable">
       <thead>
@@ -62,27 +60,23 @@
           <th>Type</th>
           <th>Chemistry</th>
           <th>Classification</th>
-          <th>Storage</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+
+    <!-- 🔥 OPTIMIZE TÄNNE -->
+    <br>
+    <button onclick="optimize()">Optimize Storage</button>
 
     <hr>
 
+    <!-- 🔥 STORAGE VIEW -->
+    <h3>Storage Overview</h3>
+    <div id="storageView"></div>
+
     <button onclick="load()">Refresh</button>
 
-    <table border="1" id="table" style="margin-top:20px">
-      <thead>
-        <tr>
-          <th>Storage</th>
-          <th>Chemistry</th>
-          <th>Weight</th>
-          <th>Count</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
   </div>
 
   <!-- PROCESSING -->
@@ -115,6 +109,155 @@
     <button>Add storage</button>
   </div>
 
-  <script src="main.js"></script>
+<script>
+
+let queue = [];
+
+/* =========================
+   ADD BATTERY
+========================= */
+function addBattery() {
+  const barcode = document.getElementById("barcode").value;
+  const typeId = document.getElementById("batteryType").value;
+  const classification = document.getElementById("classification").value;
+
+  queue.push({
+    barcode: barcode,
+    batteryType: { id: parseInt(typeId) },
+    classification: classification
+  });
+
+  renderQueue();
+}
+
+/* =========================
+   RENDER QUEUE
+========================= */
+function renderQueue() {
+  const list = document.getElementById("batteryList");
+  list.innerHTML = "";
+
+  queue.forEach(b => {
+    const li = document.createElement("li");
+    li.innerText = b.barcode;
+    list.appendChild(li);
+  });
+}
+
+/* =========================
+   BULK INSERT
+========================= */
+async function bulkInsert() {
+
+  await fetch("/api/batteries/bulk", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(queue)
+  });
+
+  queue = [];
+  renderQueue();
+
+  loadInserted();
+}
+
+/* =========================
+   LOAD INSERTED
+========================= */
+async function loadInserted() {
+
+  const res = await fetch("/api/batteries");
+  const data = await res.json();
+
+  const tbody = document.querySelector("#insertedTable tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(b => {
+    if (!b.storageSlot) {
+      const row = `
+        <tr>
+          <td>${b.barcode}</td>
+          <td>${b.batteryType.name}</td>
+          <td>${b.batteryType.chemistry}</td>
+          <td>${b.classification}</td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    }
+  });
+}
+
+/* =========================
+   OPTIMIZE
+========================= */
+async function optimize() {
+
+  await fetch("/api/optimize", { method: "POST" });
+
+  // 🔥 tyhjennä inserted table
+  document.querySelector("#insertedTable tbody").innerHTML = "";
+
+  // 🔥 päivitä näkymä
+  load();
+}
+
+/* =========================
+   LOAD STORAGE SUMMARY
+========================= */
+async function load() {
+
+  const res = await fetch("/api/batteries/summary");
+  const data = await res.json();
+
+  const container = document.getElementById("storageView");
+  container.innerHTML = "";
+
+  // 🔥 group by storage
+  const grouped = {};
+
+  data.forEach(item => {
+    if (!grouped[item.storageName]) {
+      grouped[item.storageName] = [];
+    }
+    grouped[item.storageName].push(item);
+  });
+
+  // 🔥 render
+  for (const storage in grouped) {
+
+    const div = document.createElement("div");
+
+    let html = `<h3>${storage}</h3>`;
+
+    grouped[storage].forEach(slot => {
+      html += `
+        <div>
+          → Shelf ${slot.slotName} 
+          (${slot.batteryCount} pcs, ${slot.utilization}%)
+        </div>
+      `;
+    });
+
+    div.innerHTML = html;
+    container.appendChild(div);
+  }
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+function showPage(page) {
+
+  document.getElementById("mainPage").style.display = "none";
+  document.getElementById("storagePage").style.display = "none";
+  document.getElementById("processingPage").style.display = "none";
+  document.getElementById("dashboardPage").style.display = "none";
+  document.getElementById("adminPage").style.display = "none";
+
+  document.getElementById(page + "Page").style.display = "block";
+}
+
+</script>
+
 </body>
 </html>
