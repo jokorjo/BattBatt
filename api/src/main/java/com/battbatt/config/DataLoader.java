@@ -219,7 +219,7 @@ public class DataLoader {
         s = repo.save(s);
 
         StorageSlot slot = new StorageSlot();
-        slot.setName("A");
+        slot.setName("OPEN-1");
         slot.setCapacity(100);
         slot.setStorage(s);
         slotRepo.save(slot);
@@ -233,7 +233,7 @@ public class DataLoader {
         s = repo.save(s);
 
         StorageSlot slot = new StorageSlot();
-        slot.setName("O1");
+        slot.setName("OVERFLOW-1");
         slot.setCapacity(9999);
         slot.setStorage(s);
         slotRepo.save(slot);
