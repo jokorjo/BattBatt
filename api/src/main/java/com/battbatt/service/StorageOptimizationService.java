@@ -34,6 +34,8 @@ public class StorageOptimizationService {
                 StorageSlot fallbackOpen = null;
                 StorageSlot fallbackOverflow = null;
 
+                double bestUsage = Double.MAX_VALUE;
+
                 for (StorageSlot s : slots) {
 
                 if (s.getStorage() == null) continue;
@@ -76,7 +78,7 @@ public class StorageOptimizationService {
 
                 if (isCriticalBattery && isCriticalStorage) {
                     bestPrimary = s;
-                    continue;
+                    break;
                 }
 
                 // =========================
@@ -165,8 +167,25 @@ public class StorageOptimizationService {
                 if (!"OPEN".equalsIgnoreCase(storageType)
                 && !"OVERFLOW".equalsIgnoreCase(storageType)) {
 
+                // 🔥 PALLET → täytä yksi kerrallaan
+                if ("PALLET".equalsIgnoreCase(storageType)) {
                 bestPrimary = s;
-        }
+                break;
+                }
+
+                // 🔥 PACK → valitse vähiten täytetty
+                double used = batteries.stream()
+                .filter(x -> x.getStorageSlot() != null)
+                .filter(x -> x.getStorageSlot().getName().equals(s.getName()))
+                .mapToDouble(x -> x.getBatteryType().getVolume())
+                .sum();
+
+                if (used < bestUsage) {
+                bestUsage = used;
+                bestPrimary = s;
+                }
+           }
+
 } // 🔥 closes for (StorageSlot s : slots)
 
             // =========================
