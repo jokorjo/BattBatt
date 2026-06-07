@@ -52,7 +52,7 @@
     <button onclick="bulkInsert()">Bulk</button>
 
     <!-- 🔥 INSERTED -->
-    <h3>Inserted Batteries</h3>
+    <h3>Inserted Batteries (not yet stored)</h3>
     <table border="1" id="insertedTable">
       <thead>
         <tr>
@@ -65,7 +65,6 @@
       <tbody></tbody>
     </table>
 
-    <!-- 🔥 OPTIMIZE TÄNNE -->
     <br>
     <button onclick="optimize()">Optimize Storage</button>
 
@@ -79,36 +78,6 @@
 
   </div>
 
-  <!-- PROCESSING -->
-  <div id="processingPage" style="display:none">
-    <h2>Processing</h2>
-
-    <button onclick="optimizeProcessing()">Optimize Processing</button>
-    <button onclick="confirmProcessing()">Confirm Processing</button>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div id="dashboardPage" style="display:none">
-    <h2>Dashboard</h2>
-
-    <h3>Worker Summary</h3>
-    <table border="1" id="workers">
-      <tbody></tbody>
-    </table>
-
-    <h3>Device Summary</h3>
-    <table border="1" id="devices">
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- ADMIN -->
-  <div id="adminPage" style="display:none">
-    <h2>Admin</h2>
-    <button>Add battery type</button>
-    <button>Add storage</button>
-  </div>
-
 <script>
 
 let queue = [];
@@ -120,6 +89,11 @@ function addBattery() {
   const barcode = document.getElementById("barcode").value;
   const typeId = document.getElementById("batteryType").value;
   const classification = document.getElementById("classification").value;
+
+  if (!barcode) {
+    alert("Barcode missing");
+    return;
+  }
 
   queue.push({
     barcode: barcode,
@@ -145,15 +119,34 @@ function renderQueue() {
 }
 
 /* =========================
-   BULK INSERT
+   BULK INSERT (FIXED)
 ========================= */
 async function bulkInsert() {
 
-  await fetch("/api/batteries/bulk", {
+  if (queue.length === 0) {
+    alert("Queue empty");
+    return;
+  }
+
+  console.log("Sending queue:", queue);
+
+  const res = await fetch("/api/batteries/bulk", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify(queue)
   });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("BULK ERROR:", text);
+    alert("Bulk failed: " + text);
+    return;
+  }
+
+  const data = await res.json();
+  console.log("Inserted:", data);
+
+  alert("Inserted " + data.length + " batteries");
 
   queue = [];
   renderQueue();
@@ -162,7 +155,7 @@ async function bulkInsert() {
 }
 
 /* =========================
-   LOAD INSERTED
+   LOAD INSERTED (FIXED)
 ========================= */
 async function loadInserted() {
 
@@ -173,7 +166,10 @@ async function loadInserted() {
   tbody.innerHTML = "";
 
   data.forEach(b => {
+
+    // 🔥 näytä VAIN ne joita EI ole vielä sijoitettu
     if (!b.storageSlot) {
+
       const row = `
         <tr>
           <td>${b.barcode}</td>
@@ -188,17 +184,26 @@ async function loadInserted() {
 }
 
 /* =========================
-   OPTIMIZE
+   OPTIMIZE (FIXED)
 ========================= */
 async function optimize() {
 
-  await fetch("/api/optimize", { method: "POST" });
+  const res = await fetch("/api/optimize", { method: "POST" });
 
-  // 🔥 tyhjennä inserted table
-  document.querySelector("#insertedTable tbody").innerHTML = "";
+  if (!res.ok) {
+    alert("Optimize failed");
+    return;
+  }
 
-  // 🔥 päivitä näkymä
-  load();
+  console.log("Optimization done");
+
+  // 🔥 tyhjennä vain queue (ei DOM suoraan)
+  queue = [];
+  renderQueue();
+
+  // 🔥 päivitä näkymät
+  await load();
+  await loadInserted();
 }
 
 /* =========================
@@ -212,7 +217,6 @@ async function load() {
   const container = document.getElementById("storageView");
   container.innerHTML = "";
 
-  // 🔥 group by storage
   const grouped = {};
 
   data.forEach(item => {
@@ -222,7 +226,6 @@ async function load() {
     grouped[item.storageName].push(item);
   });
 
-  // 🔥 render
   for (const storage in grouped) {
 
     const div = document.createElement("div");
