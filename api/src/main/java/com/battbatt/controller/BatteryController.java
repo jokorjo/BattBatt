@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.battbatt.entity.StorageSlot;
+
 @RestController
 @RequestMapping("/api/batteries")
 @CrossOrigin
@@ -89,24 +91,44 @@ public class BatteryController {
                 .filter(b -> b.getStorageSlot() != null && b.getBatteryType() != null)
                 .collect(Collectors.groupingBy(
                         b -> b.getStorageSlot().getStorage().getName() + "|" +
-                             b.getBatteryType().getChemistry()
+                         b.getStorageSlot().getName() + "|" +
+                         b.getBatteryType().getChemistry()
                 ))
                 .entrySet()
                 .stream()
                 .map(entry -> {
 
-                    String[] parts = entry.getKey().split("\\|");
-                    String storage = parts[0];
-                    String chemistry = parts[1];
+                List<Battery> list = entry.getValue();
 
-                    double totalWeight = entry.getValue().stream()
-                            .mapToDouble(b -> b.getBatteryType().getWeight())
-                            .sum();
+                String[] parts = entry.getKey().split("\\|");
+                String storage = parts[0];
+                String slotName = parts[1];
+                String chemistry = parts[2];
 
-                    int count = entry.getValue().size();
+                double totalWeight = list.stream()
+                        .mapToDouble(b -> b.getBatteryType().getWeight())
+                        .sum();
 
-                    return new StorageSummary(storage, chemistry, totalWeight, count);
+                int count = list.size();
+
+               StorageSlot slot = list.isEmpty() ? null : list.get(0).getStorageSlot();
+
+                double usedVolume = list.stream()
+                        .mapToDouble(b -> b.getBatteryType().getVolume())
+                        .sum();
+
+                double capacity = (slot != null) ? slot.getCapacity() : 0;
+
+                double utilization = 0;
+                if (capacity > 0) {
+                utilization = (usedVolume / capacity) * 100.0;
+                }
+                    
+                utilization = Math.round(utilization * 10.0) / 10.0;
+                    
+                return new StorageSummary(storage, slotName, chemistry, totalWeight, count, utilization);
                 })
+            
                 .toList();
     }
 }
