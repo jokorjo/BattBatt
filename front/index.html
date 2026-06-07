@@ -51,7 +51,7 @@
 
     <button onclick="bulkInsert()">Bulk</button>
 
-    <!-- 🔥 INSERTED -->
+    <!-- INSERTED -->
     <h3>Inserted Batteries (not yet stored)</h3>
     <table border="1" id="insertedTable">
       <thead>
@@ -70,7 +70,7 @@
 
     <hr>
 
-    <!-- 🔥 STORAGE VIEW -->
+    <!-- STORAGE VIEW -->
     <h3>Storage Overview</h3>
     <div id="storageView"></div>
 
@@ -119,7 +119,7 @@ function renderQueue() {
 }
 
 /* =========================
-   BULK INSERT (FIXED)
+   BULK INSERT
 ========================= */
 async function bulkInsert() {
 
@@ -127,8 +127,6 @@ async function bulkInsert() {
     alert("Queue empty");
     return;
   }
-
-  console.log("Sending queue:", queue);
 
   const res = await fetch("/api/batteries/bulk", {
     method: "POST",
@@ -138,24 +136,21 @@ async function bulkInsert() {
 
   if (!res.ok) {
     const text = await res.text();
-    console.error("BULK ERROR:", text);
     alert("Bulk failed: " + text);
     return;
   }
 
   const data = await res.json();
-  console.log("Inserted:", data);
-
-  alert("Inserted " + data.length + " batteries");
 
   queue = [];
   renderQueue();
 
+  // 🔥 tämä riittää — EI muuta
   loadInserted();
 }
 
 /* =========================
-   LOAD INSERTED (FIXED)
+   LOAD INSERTED (ALKUPERÄINEN LOGIIKKA)
 ========================= */
 async function loadInserted() {
 
@@ -167,7 +162,7 @@ async function loadInserted() {
 
   data.forEach(b => {
 
-    // 🔥 näytä VAIN ne joita EI ole vielä sijoitettu
+    // 🔥 TÄMÄ ON OIKEA – EI MUUTETA
     if (!b.storageSlot) {
 
       const row = `
@@ -184,7 +179,7 @@ async function loadInserted() {
 }
 
 /* =========================
-   OPTIMIZE (FIXED)
+   OPTIMIZE (KORJATTU)
 ========================= */
 async function optimize() {
 
@@ -195,13 +190,13 @@ async function optimize() {
     return;
   }
 
-  console.log("Optimization done");
+  // 🔥 ÄLÄ tyhjennä DOM manuaalisesti
+  // 🔥 anna backendin määrittää mitä näkyy
 
-  // 🔥 tyhjennä vain queue (ei DOM suoraan)
   queue = [];
   renderQueue();
 
-  // 🔥 päivitä näkymät
+  // 🔥 päivitä molemmat näkymät
   await load();
   await loadInserted();
 }
@@ -259,6 +254,14 @@ function showPage(page) {
 
   document.getElementById(page + "Page").style.display = "block";
 }
+
+/* =========================
+   AUTO LOAD (NEW)
+========================= */
+window.onload = () => {
+  load();
+  loadInserted();
+};
 
 </script>
 
