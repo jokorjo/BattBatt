@@ -22,11 +22,17 @@ public class StorageOptimizationService {
 
     public BatteryPlan solve(List<Battery> batteries, List<StorageSlot> slots) {
 
+
+                // 🔒 lukitse jo sijoitetut akut
+                for (Battery b : batteries) {
+                if (b.getStorageSlot() != null) { b.setLocked(true); }
+                }
+        
                 // 🔥 INITIAL ASSIGNMENT
                 for (Battery b : batteries) {
 
                 // 🔴 SKIP jos akku on jo varastossa
-                if (b.getStorageSlot() != null) continue;
+                if (b.isLocked()) continue;
 
                 if (b.getBatteryType() == null) continue;
 
@@ -89,7 +95,7 @@ public class StorageOptimizationService {
                 // =========================
                 double usedVolume = batteries.stream()
                     .filter(x -> x.getStorageSlot() != null)
-                    .filter(x -> x.getStorageSlot().getName().equals(s.getName()))
+                    .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
                     .mapToDouble(x -> x.getBatteryType().getVolume())
                     .sum();
 
@@ -120,7 +126,7 @@ public class StorageOptimizationService {
                     // nykyinen määrä slotissa
                     long count = batteries.stream()
                     .filter(x -> x.getStorageSlot() != null)
-                    .filter(x -> x.getStorageSlot().getName().equals(s.getName()))
+                    .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
                     .count();
 
                     // max stack
@@ -176,7 +182,7 @@ public class StorageOptimizationService {
                 // 🔥 PACK → valitse vähiten täytetty
                 double used = batteries.stream()
                 .filter(x -> x.getStorageSlot() != null)
-                .filter(x -> x.getStorageSlot().getName().equals(s.getName()))
+                .filter(x -> x.getStorageSlot().getId().equals(s.getId()))
                 .mapToDouble(x -> x.getBatteryType().getVolume())
                 .sum();
 
@@ -186,17 +192,20 @@ public class StorageOptimizationService {
                 }
            }
 
-} // 🔥 closes for (StorageSlot s : slots)
+            } // 🔥 closes for (StorageSlot s : slots)
 
             // =========================
             // 🔥 FINAL ASSIGNMENT
             // =========================
-            if (bestPrimary != null) {
-                b.setStorageSlot(bestPrimary);
+           if (bestPrimary != null) {
+            b.setStorageSlot(bestPrimary);
+            b.setPinned(true);
             } else if (fallbackOpen != null) {
-                b.setStorageSlot(fallbackOpen);
+            b.setStorageSlot(fallbackOpen);
+            b.setPinned(true);
             } else if (fallbackOverflow != null) {
-                b.setStorageSlot(fallbackOverflow);
+            b.setStorageSlot(fallbackOverflow);
+              b.setPinned(true);
             } else {
                 throw new RuntimeException(
                         "No storage capacity available for battery: " + b.getBarcode()
