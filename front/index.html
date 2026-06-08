@@ -207,22 +207,16 @@ async function optimize() {
   queue = [];
   renderQueue();
 
-  // 🔥 1. ENSIMMÄINEN refresh (voi olla liian aikaisin)
+  // 🔥 tee useampi automaattinen refresh
+  setTimeout(loadAll, 500);
+  setTimeout(loadAll, 1000);
+  setTimeout(loadAll, 1500);
+  setTimeout(loadAll, 2000);
+}
+
+async function loadAll() {
   await load();
   await loadInserted();
-
-  // 🔥 2. VARMA refresh 1s päästä (TÄMÄ RATKAISEE SUN ONGELMAN)
-  setTimeout(async () => {
-    await load();
-    await loadInserted();
-
-    const msg = document.createElement("p");
-    msg.style.color = "green";
-    msg.innerText = "✔ Storage optimized";
-
-    container.appendChild(msg);
-
-  }, 1000);
 }
 
 /* =========================
