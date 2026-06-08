@@ -194,6 +194,13 @@ async function loadInserted() {
 ========================= */
 async function optimize() {
 
+  console.log("OPTIMIZE CLICKED");
+
+  const container = document.getElementById("storageView");
+
+  // 🔥 näytä heti
+  container.innerHTML = "<p style='color:orange;'>Optimizing...</p>";
+
   const res = await fetch(`${BASE}/optimize`, { method: "POST" });
 
   if (!res.ok) {
@@ -201,19 +208,23 @@ async function optimize() {
     return;
   }
 
-  queue = [];
-  renderQueue();
-
-  const container = document.getElementById("storageView");
-  container.innerHTML = "<p style='color:green;'>Optimizing...</p>";
-
-  await new Promise(r => setTimeout(r, 300));
-
+  // 🔥 päivitä storage
   await load();
 
-  document.querySelector("#insertedTable tbody").innerHTML = "";
+  // 🔥 TYHJENNÄ inserted (TÄMÄ ON SE JUTTU JOKA PUUTTUI)
+  const tbody = document.querySelector("#insertedTable tbody");
+  tbody.innerHTML = "";
 
-  container.innerHTML += "<p style='color:green;'>✔ Storage optimized</p>";
+  // 🔥 näytä valmis status ERILLISENÄ (ei ylikirjoitu)
+  const msg = document.createElement("p");
+  msg.style.color = "green";
+  msg.innerText = "✔ Storage optimized";
+
+  container.appendChild(msg);
+
+  // 🔥 tyhjennä queue UI
+  queue = [];
+  renderQueue();
 }
 
 /* =========================
