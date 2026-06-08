@@ -71,11 +71,24 @@
     <hr>
 
     <!-- STORAGE VIEW -->
+    <div style="display:flex; gap:40px; align-items:flex-start;">
+
+  <!-- LEFT: STORAGE -->
+   <div>
     <h3>Storage Overview</h3>
     <div id="storageView"></div>
+  </div>
+
+  <!-- RIGHT: PLACEMENT -->
+  <div>
+    <h3>Placement Result</h3>
+    <div id="placementView"></div>
+  </div>
+
+</div>
 
     <button onclick="load()">Refresh</button>
-
+    
   </div>
 
   <!-- 🔥 LISÄTTY TAKAS → estää crashin -->
@@ -217,16 +230,18 @@ async function optimize() {
 async function loadAll() {
   await load();
   await loadInserted();
+  await loadPlacement();
 }
 
 /* =========================
-   LOAD STORAGE SUMMARY
+   LOAD STORAGE SUMMARY + PLACEMENT
 ========================= */
 async function load() {
 
-  const res = await fetch(`${BASE}/batteries/summary`); // 🔥 FIX
+  const res = await fetch(`${BASE}/batteries/summary`);
   const data = await res.json();
 
+  // 🔥 STORAGE VIEW
   const container = document.getElementById("storageView");
   container.innerHTML = "";
 
@@ -257,6 +272,45 @@ async function load() {
     div.innerHTML = html;
     container.appendChild(div);
   }
+
+  // ======================================
+  // 🔥 PLACEMENT RESULT (UUSI OSA)
+  // ======================================
+
+  const placementContainer = document.getElementById("placementView");
+
+  // jos elementtiä ei ole → älä kaadu
+  if (!placementContainer) return;
+
+  const resAll = await fetch(`${BASE}/batteries`);
+  const all = await resAll.json();
+
+  placementContainer.innerHTML = "";
+
+  const placed = all.filter(b =>
+    lastInsertedBarcodes.includes(b.barcode)
+  );
+
+  if (placed.length === 0) {
+    placementContainer.innerHTML = "<p>No recent placements</p>";
+    return;
+  }
+
+  placed.forEach(b => {
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      <span style="display:inline-block; width:140px;">
+        ${b.barcode}
+      </span>
+      → 
+      <span style="color:green;">
+        ${b.storageSlot ? "Shelf " + b.storageSlot.name : "NOT PLACED"}
+      </span>
+    `;
+
+    placementContainer.appendChild(div);
+  });
 }
 
 /* =========================
