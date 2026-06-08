@@ -303,10 +303,11 @@ async function load() {
 
     // 🔥 FIND oikea storage summarysta
     const match = slotLookup.find(s =>
-      s.slotName === b.storageSlot?.name &&
-      s.chemistry === b.batteryType?.chemistry
+    s.slotName === b.storageSlot?.name &&
+    s.chemistry === b.batteryType?.chemistry &&
+    s.storageName.toLowerCase().includes(b.batteryType?.chemistry.toLowerCase())
     );
-
+    
     const storageName = match ? match.storageName : "Storage";
 
     const div = document.createElement("div");
