@@ -131,7 +131,7 @@ function renderQueue() {
 
   queue.forEach(b => {
     const li = document.createElement("li");
-    li.innerText = b.barcode;
+    li.innerText = `${b.barcode} | Type ${b.batteryType.id} | ${b.classification}`;
     list.appendChild(li);
   });
 }
@@ -292,9 +292,12 @@ async function load() {
     const div = document.createElement("div");
 
     div.innerHTML = `
-      <span style="display:inline-block; width:140px;">
-        ${b.barcode}
-      </span>
+       <span style="display:inline-block; width:250px;">
+        ${b.barcode}<br>
+        <small>
+       ${b.batteryType?.name} | ${b.classification}
+        </small>
+         </span>
       → 
       <span style="color:${b.storageSlot ? 'green' : 'orange'};">
         ${
