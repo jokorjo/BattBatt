@@ -273,9 +273,11 @@ async function load() {
   </span>
   → 
   <span style="color:${b.storageSlot ? 'green' : 'orange'};">
-    ${b.storageSlot 
-      ? b.storageSlot.storage.name + " – Shelf " + b.storageSlot.name
-      : "Placing..."}
+    ${
+      b.storageSlot
+        ? (b.storageSlot.storage?.name || "Storage") + " – Shelf " + b.storageSlot.name
+        : "Placing..."
+    }
   </span>
 `;
     placementContainer.appendChild(div);
