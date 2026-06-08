@@ -131,4 +131,10 @@ public class BatteryController {
             
                 .toList();
     }
+    @GetMapping("/types")
+    public List<BatteryType> getTypes() {
+        return entityManager
+            .createQuery("SELECT b FROM BatteryType b", BatteryType.class)
+            .getResultList();
+    }
 }
