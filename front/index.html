@@ -221,26 +221,39 @@ async function load() {
 
   const grouped = {};
 
+  // 🔥 lookup LISTA (EI object overwritea!)
+  const slotLookup = [];
+
   data.forEach(item => {
     if (!grouped[item.storageName]) {
       grouped[item.storageName] = [];
     }
     grouped[item.storageName].push(item);
+
+    // 🔥 kerätään mapping talteen
+    slotLookup.push({
+      slotName: item.slotName,
+      storageName: item.storageName,
+      chemistry: item.chemistry
+    });
   });
 
+  // =========================
+  // STORAGE VIEW
+  // =========================
   for (const storage in grouped) {
 
     let html = `<h3>${storage}</h3>`;
 
     grouped[storage].forEach(slot => {
-       html += `
-    <div>
-      → Shelf ${slot.slotName} 
-      <span style="color:gray;">
-      (${storage}, ${slot.batteryCount} pcs, ${slot.utilization}%)
-      </span>
-    </div>
-  `;
+      html += `
+        <div>
+          → Shelf ${slot.slotName} 
+          <span style="color:gray;">
+          (${storage}, ${slot.batteryCount} pcs, ${slot.utilization}%)
+          </span>
+        </div>
+      `;
     });
 
     const div = document.createElement("div");
@@ -248,7 +261,9 @@ async function load() {
     container.appendChild(div);
   }
 
-  // 🔥 PLACEMENT
+  // =========================
+  // 🔥 PLACEMENT RESULT FIX
+  // =========================
   const resAll = await fetch(`${BASE}/batteries`);
   const all = await resAll.json();
 
@@ -265,21 +280,31 @@ async function load() {
   }
 
   placed.forEach(b => {
+
+    // 🔥 FIND oikea storage summarysta
+    const match = slotLookup.find(s =>
+      s.slotName === b.storageSlot?.name &&
+      s.chemistry === b.batteryType?.chemistry
+    );
+
+    const storageName = match ? match.storageName : "Storage";
+
     const div = document.createElement("div");
 
-   div.innerHTML = `
-  <span style="display:inline-block; width:140px;">
-    ${b.barcode}
-  </span>
-  → 
-  <span style="color:${b.storageSlot ? 'green' : 'orange'};">
-    ${
-      b.storageSlot
-        ? (b.storageSlot.storage?.name || "Storage") + " – Shelf " + b.storageSlot.name
-        : "Placing..."
-    }
-  </span>
-`;
+    div.innerHTML = `
+      <span style="display:inline-block; width:140px;">
+        ${b.barcode}
+      </span>
+      → 
+      <span style="color:${b.storageSlot ? 'green' : 'orange'};">
+        ${
+          b.storageSlot
+            ? storageName + " – Shelf " + b.storageSlot.name
+            : "Placing..."
+        }
+      </span>
+    `;
+
     placementContainer.appendChild(div);
   });
 }
