@@ -31,14 +31,7 @@
 
     <input id="barcode" placeholder="Barcode" />
 
-    <select id="batteryType">
-      <option value="1">NMC Pack</option>
-      <option value="2">NMC Pack 2</option>
-      <option value="3">NMC Module</option>
-      <option value="4">LFP Pack</option>
-      <option value="5">LFP Pack 2</option>
-      <option value="6">LFP Module</option>
-    </select>
+    <select id="batteryType"></select>
 
     <select id="classification">
       <option value="STABLE">STABLE</option>
@@ -99,6 +92,29 @@ const BASE = "https://battbatt-1.onrender.com/api";
 
 let queue = [];
 let lastInsertedBarcodes = []; // 🔥 TÄRKEÄ
+let batteryTypes = {};
+
+// 🔥 LISÄÄ TÄMÄ TÄHÄN
+async function loadBatteryTypes() {
+
+  const res = await fetch(`${BASE}/batteries/types`);
+  const data = await res.json();
+
+  const select = document.getElementById("batteryType");
+  select.innerHTML = "";
+
+  batteryTypes = {};
+
+  data.forEach(t => {
+    batteryTypes[t.id] = t.name;
+
+    const opt = document.createElement("option");
+    opt.value = t.id;
+    opt.textContent = t.name;
+
+    select.appendChild(opt);
+  });
+}
 
 /* =========================
    ADD BATTERY
@@ -131,7 +147,11 @@ function renderQueue() {
 
   queue.forEach(b => {
     const li = document.createElement("li");
-    li.innerText = `${b.barcode} | Type ${b.batteryType.id} | ${b.classification}`;
+
+    const typeName = batteryTypes[b.batteryType.id] || "Unknown";
+
+    li.innerText = `${b.barcode} | ${typeName} | ${b.classification}`;
+
     list.appendChild(li);
   });
 }
@@ -331,7 +351,8 @@ function showPage(page) {
 /* =========================
    INIT
 ========================= */
-window.onload = () => {
+window.onload = async () => {
+  await loadBatteryTypes(); // 🔥 tämä
   load();
   loadInserted();
 };
