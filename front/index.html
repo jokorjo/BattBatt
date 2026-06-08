@@ -204,24 +204,25 @@ async function optimize() {
     return;
   }
 
-  // 🔥 odota että backend ehtii tallentaa
-  await new Promise(r => setTimeout(r, 1500));
-
-  // 🔥 päivitä storage
-  await load();
-
-  // 🔥 TÄRKEIN: hae inserted uudestaan backendistä
-  await loadInserted();
-
-  // 🔥 UI palaute
-  const msg = document.createElement("p");
-  msg.style.color = "green";
-  msg.innerText = "✔ Storage optimized";
-
-  container.appendChild(msg);
-
   queue = [];
   renderQueue();
+
+  // 🔥 1. ENSIMMÄINEN refresh (voi olla liian aikaisin)
+  await load();
+  await loadInserted();
+
+  // 🔥 2. VARMA refresh 1s päästä (TÄMÄ RATKAISEE SUN ONGELMAN)
+  setTimeout(async () => {
+    await load();
+    await loadInserted();
+
+    const msg = document.createElement("p");
+    msg.style.color = "green";
+    msg.innerText = "✔ Storage optimized";
+
+    container.appendChild(msg);
+
+  }, 1000);
 }
 
 /* =========================
