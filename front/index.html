@@ -195,7 +195,7 @@ async function loadInserted() {
 async function optimize() {
 
   const container = document.getElementById("storageView");
-  container.innerHTML = "<p style='color:orange;'>Optimizing...</p>";
+  container.innerHTML = "<p style='color:orange;'>Refresh to see updated storage overview</p>";
 
   const res = await fetch(`${BASE}/optimize`, { method: "POST" });
 
