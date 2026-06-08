@@ -194,11 +194,7 @@ async function loadInserted() {
 ========================= */
 async function optimize() {
 
-  console.log("OPTIMIZE CLICKED");
-
   const container = document.getElementById("storageView");
-
-  // 🔥 näytä heti
   container.innerHTML = "<p style='color:orange;'>Optimizing...</p>";
 
   const res = await fetch(`${BASE}/optimize`, { method: "POST" });
@@ -208,21 +204,22 @@ async function optimize() {
     return;
   }
 
+  // 🔥 odota että backend ehtii tallentaa
+  await new Promise(r => setTimeout(r, 500));
+
   // 🔥 päivitä storage
   await load();
 
-  // 🔥 TYHJENNÄ inserted (TÄMÄ ON SE JUTTU JOKA PUUTTUI)
-  const tbody = document.querySelector("#insertedTable tbody");
-  tbody.innerHTML = "";
+  // 🔥 TÄRKEIN: hae inserted uudestaan backendistä
+  await loadInserted();
 
-  // 🔥 näytä valmis status ERILLISENÄ (ei ylikirjoitu)
+  // 🔥 UI palaute
   const msg = document.createElement("p");
   msg.style.color = "green";
   msg.innerText = "✔ Storage optimized";
 
   container.appendChild(msg);
 
-  // 🔥 tyhjennä queue UI
   queue = [];
   renderQueue();
 }
