@@ -82,7 +82,31 @@
 
   </div>
 
-  <div id="processingPage" style="display:none"></div>
+  <div id="processingPage" style="display:none">
+  <h2>Processing</h2>
+
+  <div style="margin-bottom:10px;">
+    Workers:
+    <input id="workers" type="number" value="2" style="width:60px;" />
+
+    Minutes:
+    <input id="minutes" type="number" value="480" style="width:80px;" />
+  </div>
+
+  <button onclick="optimizeProcessing()">Optimize Processing</button>
+  <button onclick="confirmProcessing()">Confirm Processing</button>
+
+  <h3>Worker Load</h3>
+  <table border="1">
+    <tbody id="workersTable"></tbody>
+  </table>
+
+  <h3>Device Load</h3>
+  <table border="1">
+    <tbody id="devicesTable"></tbody>
+  </table>
+</div>
+  
   <div id="dashboardPage" style="display:none"></div>
   <div id="adminPage" style="display:none"></div>
 
@@ -210,7 +234,7 @@ async function loadInserted() {
 }
 
 /* =========================
-   OPTIMIZE
+   OPTIMIZE STORAGE
 ========================= */
 async function optimize() {
 
@@ -223,11 +247,15 @@ async function optimize() {
   renderQueue();
 
   // 🔥 useampi refresh
-  setTimeout(load, 800);
-  setTimeout(load, 1500);
-  setTimeout(load, 2200);
+  setTimeout(loadAll, 800);
+  setTimeout(loadAll, 1500);
+  setTimeout(loadAll, 2200);
 }
 
+  async function loadAll() {
+  await load();
+  await loadInserted();
+}
 /* =========================
    LOAD STORAGE + PLACEMENT
 ========================= */
@@ -308,7 +336,7 @@ async function load() {
     s.storageName.toLowerCase().includes(b.batteryType?.chemistry.toLowerCase())
     );
     
-    const storageName = match ? match.storageName : "Storage";
+    const storageName = match ? match.storageName : "Unknown Storage";
 
     const div = document.createElement("div");
 
@@ -324,7 +352,7 @@ async function load() {
         ${
           b.storageSlot
             ? storageName + " – Shelf " + b.storageSlot.name
-            : "Placing..."
+            : "Waiting for placement..."
         }
       </span>
     `;
@@ -332,7 +360,107 @@ async function load() {
     placementContainer.appendChild(div);
   });
 }
+/*======================
+Processing optimization
+===============*/
+  async function optimizeProcessing() {
 
+  const workers = document.getElementById("workers").value;
+  const minutes = document.getElementById("minutes").value;
+
+  if (!workers || !minutes) {
+    alert("Fill workers and minutes");
+    return;
+  }
+
+  const res = await fetch(`${BASE}/processing/optimize`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      workers: Number(workers),
+      workingMinutes: Number(minutes)
+    })
+  });
+
+  if (!res.ok) {
+    alert("Optimize failed");
+    return;
+  }
+
+  await loadWorkers();
+  await loadDevices();
+}
+
+/*========================
+WORKERS TABLE
+======================== */
+  async function loadWorkers() {
+
+  const res = await fetch(`${BASE}/processing/worker-summary`);
+  const data = await res.json();
+
+  const tbody = document.getElementById("workersTable");
+  tbody.innerHTML = "";
+
+  if (data.length === 0) {
+  tbody.innerHTML = "<tr><td colspan='3'>No workers</td></tr>";
+  return;
+  }
+
+  data.forEach(w => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${w.workerName || "Worker"}</td>
+      <td>${w.taskCount}</td>
+      <td>${w.totalTime.toFixed(1)}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+  /*======================
+  DEVICES TABLE
+  ========================*/
+async function loadDevices() {
+
+  const res = await fetch(`${BASE}/processing/device-summary`);
+  const data = await res.json();
+
+  const tbody = document.getElementById("devicesTable");
+  tbody.innerHTML = "";
+
+  if (data.length === 0) {
+  tbody.innerHTML = "<tr><td colspan='3'>No devices</td></tr>";
+  return;
+  }
+
+  data.forEach(d => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${d.deviceName}</td>
+      <td>${d.taskCount}</td>
+      <td>${d.totalTime.toFixed(1)}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+/*========================
+CONFIRM PROCESSING
+=======================*/
+  async function confirmProcessing() {
+
+  await fetch(`${BASE}/processing/confirm-all`, {
+    method: "POST"
+  });
+
+  await loadWorkers();
+  await loadDevices();
+}
+  
 /* =========================
    NAVIGATION
 ========================= */
@@ -347,6 +475,10 @@ function showPage(page) {
 
   const active = document.getElementById(page + "Page");
   if (active) active.style.display = "block";
+
+  if (page === "processing") {
+  loadWorkers();
+  loadDevices(); }
 }
 
 /* =========================
