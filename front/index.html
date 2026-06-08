@@ -93,6 +93,8 @@
 
 <script>
 
+const BASE = "https://battbatt-1.onrender.com/api"; // 🔥 TÄMÄ LISÄTTY
+
 let queue = [];
 
 /* =========================
@@ -141,7 +143,7 @@ async function bulkInsert() {
     return;
   }
 
-  const res = await fetch("/api/batteries/bulk", {
+  const res = await fetch(`${BASE}/batteries/bulk`, {  // 🔥 FIX
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify(queue)
@@ -164,7 +166,7 @@ async function bulkInsert() {
 ========================= */
 async function loadInserted() {
 
-  const res = await fetch("/api/batteries");
+  const res = await fetch(`${BASE}/batteries`); // 🔥 FIX
   const data = await res.json();
 
   const tbody = document.querySelector("#insertedTable tbody");
@@ -192,7 +194,7 @@ async function loadInserted() {
 ========================= */
 async function optimize() {
 
-  const res = await fetch("/api/optimize", { method: "POST" });
+  const res = await fetch(`${BASE}/optimize`, { method: "POST" }); // 🔥 FIX
 
   if (!res.ok) {
     alert("Optimize failed");
@@ -211,7 +213,7 @@ async function optimize() {
 ========================= */
 async function load() {
 
-  const res = await fetch("/api/batteries/summary");
+  const res = await fetch(`${BASE}/batteries/summary`); // 🔥 FIX
   const data = await res.json();
 
   const container = document.getElementById("storageView");
@@ -247,7 +249,7 @@ async function load() {
 }
 
 /* =========================
-   NAVIGATION (FIXED)
+   NAVIGATION
 ========================= */
 function showPage(page) {
 
