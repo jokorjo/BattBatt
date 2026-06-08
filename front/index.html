@@ -267,16 +267,17 @@ async function load() {
   placed.forEach(b => {
     const div = document.createElement("div");
 
-    div.innerHTML = `
-      <span style="display:inline-block; width:140px;">
-        ${b.barcode}
-      </span>
-      → 
-      <span style="color:${b.storageSlot ? 'green' : 'orange'};">
-        ${b.storageSlot ? "Shelf " + b.storageSlot.name : "Placing..."}
-      </span>
-    `;
-
+   div.innerHTML = `
+  <span style="display:inline-block; width:140px;">
+    ${b.barcode}
+  </span>
+  → 
+  <span style="color:${b.storageSlot ? 'green' : 'orange'};">
+    ${b.storageSlot 
+      ? b.storageSlot.storage.name + " – Shelf " + b.storageSlot.name
+      : "Placing..."}
+  </span>
+`;
     placementContainer.appendChild(div);
   });
 }
