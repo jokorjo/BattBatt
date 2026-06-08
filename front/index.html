@@ -70,45 +70,35 @@
 
     <hr>
 
-    <!-- STORAGE VIEW -->
+    <!-- STORAGE + PLACEMENT -->
     <div style="display:flex; gap:40px; align-items:flex-start;">
 
-  <!-- LEFT: STORAGE -->
-   <div>
-    <h3>Storage Overview</h3>
-    <div id="storageView"></div>
-  </div>
+      <div>
+        <h3>Storage Overview</h3>
+        <div id="storageView"></div>
+      </div>
 
-  <!-- RIGHT: PLACEMENT -->
-  <div>
-    <h3>Placement Result</h3>
-    <div id="placementView"></div>
-  </div>
+      <div>
+        <h3>Placement Result</h3>
+        <div id="placementView"></div>
+      </div>
 
-</div>
+    </div>
 
     <button onclick="load()">Refresh</button>
-    
+
   </div>
 
-  <!-- 🔥 LISÄTTY TAKAS → estää crashin -->
-  <div id="processingPage" style="display:none">
-    <h2>Processing</h2>
-  </div>
-
-  <div id="dashboardPage" style="display:none">
-    <h2>Dashboard</h2>
-  </div>
-
-  <div id="adminPage" style="display:none">
-    <h2>Admin</h2>
-  </div>
+  <div id="processingPage" style="display:none"></div>
+  <div id="dashboardPage" style="display:none"></div>
+  <div id="adminPage" style="display:none"></div>
 
 <script>
 
-const BASE = "https://battbatt-1.onrender.com/api"; // 🔥 TÄMÄ LISÄTTY
+const BASE = "https://battbatt-1.onrender.com/api";
 
 let queue = [];
+let lastInsertedBarcodes = []; // 🔥 TÄRKEÄ
 
 /* =========================
    ADD BATTERY
@@ -156,17 +146,16 @@ async function bulkInsert() {
     return;
   }
 
-  const res = await fetch(`${BASE}/batteries/bulk`, {  // 🔥 FIX
+  const res = await fetch(`${BASE}/batteries/bulk`, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify(queue)
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    alert("Bulk failed: " + text);
-    return;
-  }
+  const data = await res.json();
+
+  // 🔥 TALLENNA UUSIEN BARCODET
+  lastInsertedBarcodes = data.map(b => b.barcode);
 
   queue = [];
   renderQueue();
@@ -179,16 +168,14 @@ async function bulkInsert() {
 ========================= */
 async function loadInserted() {
 
-  const res = await fetch(`${BASE}/batteries`); // 🔥 FIX
+  const res = await fetch(`${BASE}/batteries`);
   const data = await res.json();
 
   const tbody = document.querySelector("#insertedTable tbody");
   tbody.innerHTML = "";
 
   data.forEach(b => {
-
     if (!b.storageSlot) {
-
       const row = `
         <tr>
           <td>${b.barcode}</td>
@@ -208,40 +195,27 @@ async function loadInserted() {
 async function optimize() {
 
   const container = document.getElementById("storageView");
-  container.innerHTML = "<p style='color:orange;'>Refresh to see updated storage overview</p>";
+  container.innerHTML = "<p style='color:orange;'>Optimizing...</p>";
 
-  const res = await fetch(`${BASE}/optimize`, { method: "POST" });
-
-  if (!res.ok) {
-    alert("Optimize failed");
-    return;
-  }
+  await fetch(`${BASE}/optimize`, { method: "POST" });
 
   queue = [];
   renderQueue();
 
-  // 🔥 tee useampi automaattinen refresh
-  setTimeout(loadAll, 500);
-  setTimeout(loadAll, 1000);
-  setTimeout(loadAll, 1500);
-  setTimeout(loadAll, 2000);
-}
-
-async function loadAll() {
-  await load();
-  await loadInserted();
-  await loadPlacement();
+  // 🔥 useampi refresh
+  setTimeout(load, 800);
+  setTimeout(load, 1500);
+  setTimeout(load, 2200);
 }
 
 /* =========================
-   LOAD STORAGE SUMMARY + PLACEMENT
+   LOAD STORAGE + PLACEMENT
 ========================= */
 async function load() {
 
   const res = await fetch(`${BASE}/batteries/summary`);
   const data = await res.json();
 
-  // 🔥 STORAGE VIEW
   const container = document.getElementById("storageView");
   container.innerHTML = "";
 
@@ -256,8 +230,6 @@ async function load() {
 
   for (const storage in grouped) {
 
-    const div = document.createElement("div");
-
     let html = `<h3>${storage}</h3>`;
 
     grouped[storage].forEach(slot => {
@@ -269,22 +241,16 @@ async function load() {
       `;
     });
 
+    const div = document.createElement("div");
     div.innerHTML = html;
     container.appendChild(div);
   }
 
-  // ======================================
-  // 🔥 PLACEMENT RESULT (UUSI OSA)
-  // ======================================
-
-  const placementContainer = document.getElementById("placementView");
-
-  // jos elementtiä ei ole → älä kaadu
-  if (!placementContainer) return;
-
+  // 🔥 PLACEMENT
   const resAll = await fetch(`${BASE}/batteries`);
   const all = await resAll.json();
 
+  const placementContainer = document.getElementById("placementView");
   placementContainer.innerHTML = "";
 
   const placed = all.filter(b =>
@@ -304,8 +270,8 @@ async function load() {
         ${b.barcode}
       </span>
       → 
-      <span style="color:green;">
-        ${b.storageSlot ? "Shelf " + b.storageSlot.name : "NOT PLACED"}
+      <span style="color:${b.storageSlot ? 'green' : 'orange'};">
+        ${b.storageSlot ? "Shelf " + b.storageSlot.name : "Placing..."}
       </span>
     `;
 
@@ -322,19 +288,15 @@ function showPage(page) {
 
   pages.forEach(id => {
     const el = document.getElementById(id);
-    if (el) {
-      el.style.display = "none";
-    }
+    if (el) el.style.display = "none";
   });
 
   const active = document.getElementById(page + "Page");
-  if (active) {
-    active.style.display = "block";
-  }
+  if (active) active.style.display = "block";
 }
 
 /* =========================
-   AUTO LOAD
+   INIT
 ========================= */
 window.onload = () => {
   load();
