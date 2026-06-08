@@ -194,7 +194,7 @@ async function loadInserted() {
 ========================= */
 async function optimize() {
 
-  const res = await fetch(`${BASE}/optimize`, { method: "POST" }); // 🔥 FIX
+  const res = await fetch(`${BASE}/optimize`, { method: "POST" });
 
   if (!res.ok) {
     alert("Optimize failed");
@@ -204,8 +204,16 @@ async function optimize() {
   queue = [];
   renderQueue();
 
+  const container = document.getElementById("storageView");
+  container.innerHTML = "<p style='color:green;'>Optimizing...</p>";
+
+  await new Promise(r => setTimeout(r, 300));
+
   await load();
-  await loadInserted();
+
+  document.querySelector("#insertedTable tbody").innerHTML = "";
+
+  container.innerHTML += "<p style='color:green;'>✔ Storage optimized</p>";
 }
 
 /* =========================
