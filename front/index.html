@@ -126,7 +126,33 @@
 </div>
   
   <div id="dashboardPage" style="display:none"></div>
-  <div id="adminPage" style="display:none"></div>
+  
+  <div id="adminPage" style="display:none">
+
+  <h2>Admin</h2>
+
+  <!-- STORAGE -->
+  <h3>Create Storage</h3>
+  <input id="storageName" placeholder="Storage name" />
+  <button onclick="createStorage()">Create</button>
+
+  <!-- BATTERY TYPE -->
+  <h3>Create Battery Type</h3>
+  <input id="typeName" placeholder="Type name" />
+  <input id="typeChemistry" placeholder="Chemistry" />
+  <button onclick="createBatteryType()">Create</button>
+
+  <!-- DEVICE -->
+  <h3>Create Device</h3>
+  <input id="deviceName" placeholder="Device name" />
+  <button onclick="createDevice()">Create</button>
+
+  <!-- DELETE BATTERY -->
+  <h3>Delete Battery</h3>
+  <input id="deleteId" placeholder="Battery ID" />
+  <button onclick="deleteBattery()">Delete</button>
+
+</div>
 
 <script>
 
@@ -619,6 +645,7 @@ async function loadDevices() {
   outbound.forEach(b => {
 
     const div = document.createElement("div");
+    div.style.marginBottom = "6px";
 
     div.innerHTML = `
       <b>${b.barcode}</b> | ${b.batteryType.name}
@@ -734,7 +761,61 @@ window.onload = async () => {
   load();
   loadInserted();
 };
+// CREATE STORAGE
+async function createStorage() {
+  const name = document.getElementById("storageName").value;
 
+  await fetch(`${BASE}/admin/storage`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ name })
+  });
+
+  alert("Storage created");
+}
+
+// CREATE BATTERY TYPE
+async function createBatteryType() {
+  const name = document.getElementById("typeName").value;
+  const chemistry = document.getElementById("typeChemistry").value;
+
+  await fetch(`${BASE}/admin/battery-type`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ name, chemistry })
+  });
+
+  alert("Battery type created");
+}
+
+// CREATE DEVICE
+async function createDevice() {
+  const name = document.getElementById("deviceName").value;
+
+  await fetch(`${BASE}/admin/device`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ name })
+  });
+
+  alert("Device created");
+
+  loadDevices();
+}
+
+// DELETE BATTERY
+async function deleteBattery() {
+  const id = document.getElementById("deleteId").value;
+
+  await fetch(`${BASE}/admin/battery/${id}`, {
+    method: "DELETE"
+  });
+
+  alert("Battery deleted");
+
+  load();
+  loadOutbound();
+}
 </script>
 
 </body>
