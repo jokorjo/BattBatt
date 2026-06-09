@@ -115,7 +115,7 @@ public class ProcessingController {
         }
 
         StorageSlot outbound =
-            slotRepo.findFirstByStorageName("Outbound");
+            slotRepo.findByStorageName("Outbound");
 
         if (outbound == null) {
             throw new RuntimeException("Outbound storage not found!");
