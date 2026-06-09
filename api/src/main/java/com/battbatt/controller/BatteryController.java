@@ -17,7 +17,7 @@ import com.battbatt.entity.StorageSlot;
 @CrossOrigin(origins = "https://batt-batt-pink.vercel.app")
 @RestController
 @RequestMapping("/api/batteries")
-@CrossOrigin
+    
 public class BatteryController {
 
     private final BatteryRepository repo;
