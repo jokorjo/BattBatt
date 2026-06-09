@@ -132,7 +132,6 @@ public class ProcessingController {
 
         return response;
     }
-}
      @PostMapping("/shipped/{id}")
         public ConfirmResponse markShipped(@PathVariable Long id) {
 
