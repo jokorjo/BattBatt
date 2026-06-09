@@ -593,14 +593,6 @@ async function loadDevices() {
   });
 }
   
-async function loadOutbound() {
-
-  const res = await fetch(`${BASE}/batteries`);
-  const data = await res.json();
-
-  const container = document.getElementById("outboundList");
-  container.innerHTML = "";
-
   async function loadOutbound() {
 
   const res = await fetch(`${BASE}/batteries`);
