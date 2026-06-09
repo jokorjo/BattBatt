@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.battbatt.entity.StorageSlot;
 
+@CrossOrigin(origins = "https://batt-batt-pink.vercel.app")
 @RestController
 @RequestMapping("/api/batteries")
 @CrossOrigin
