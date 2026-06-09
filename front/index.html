@@ -119,6 +119,10 @@
 
   <h3>Outbound (Ready)</h3>
     <div id="outboundList"></div>
+    
+    <h3>Shipped</h3>
+<div id="shippedList"></div>
+    
 </div>
   
   <div id="dashboardPage" style="display:none"></div>
@@ -132,6 +136,7 @@ let queue = [];
 let lastInsertedBarcodes = []; // 🔥 TÄRKEÄ
 let batteryTypes = {};
 let batteryMap = {};
+let shippedBatteries = [];
 
 // 🔥 LISÄÄ TÄMÄ TÄHÄN
 async function loadBatteryTypes() {
@@ -611,11 +616,6 @@ async function loadDevices() {
     return;
   }
 
-  if (outbound.length === 0) {
-    container.innerHTML = "<p>No batteries ready</p>";
-    return;
-  }
-
   outbound.forEach(b => {
 
     const div = document.createElement("div");
@@ -657,12 +657,48 @@ CONFIRM PROCESSING
   await loadOutbound();
 }
   async function markShipped(id) {
+
+  const b = batteryMap[id];
+
   await fetch(`${BASE}/processing/shipped/${id}`, {
     method: "POST"
   });
 
+  if (b) {
+    shippedBatteries.push({
+      barcode: b.barcode,
+      type: b.batteryType?.name,
+      time: new Date().toLocaleString()
+});
+  }
+
   await loadBatteryMap();
   await loadOutbound();
+  renderShipped();
+}
+
+  function renderShipped() {
+
+  const container = document.getElementById("shippedList");
+  container.innerHTML = "";
+
+  if (shippedBatteries.length === 0) {
+    container.innerHTML = "<p>No shipments yet</p>";
+    return;
+  }
+
+  shippedBatteries.forEach(b => {
+
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      <span style="color:green;">
+        ✔ ${b.barcode} (${b.type}) shipped at ${b.time}
+      </span>
+    `;
+
+    container.appendChild(div);
+  });
 }
 /* =========================
    NAVIGATION
@@ -685,6 +721,7 @@ function showPage(page) {
   loadDevices();
   loadPickupList(); 
   loadOutbound();
+  renderShipped();
   }
 }
 
