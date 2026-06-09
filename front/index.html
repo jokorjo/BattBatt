@@ -98,8 +98,16 @@
 
   <h3>Worker Load</h3>
   <table border="1">
-    <tbody id="workersTable"></tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Worker</th>
+      <th>Tasks</th>
+      <th>Total Time</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody id="workersTable"></tbody>
+</table>
 
   <h3>Device Load</h3>
   <table border="1">
@@ -117,6 +125,7 @@ const BASE = "https://battbatt-1.onrender.com/api";
 let queue = [];
 let lastInsertedBarcodes = []; // 🔥 TÄRKEÄ
 let batteryTypes = {};
+let batteryMap = {};
 
 // 🔥 LISÄÄ TÄMÄ TÄHÄN
 async function loadBatteryTypes() {
@@ -140,6 +149,17 @@ async function loadBatteryTypes() {
   });
 }
 
+  async function loadBatteryMap() {
+
+  const res = await fetch(`${BASE}/batteries`);
+  const data = await res.json();
+
+  batteryMap = {};
+
+  data.forEach(b => {
+    batteryMap[b.id] = b;
+  });
+}
 /* =========================
    ADD BATTERY
 ========================= */
@@ -386,7 +406,8 @@ Processing optimization
     alert("Optimize failed");
     return;
   }
-
+  
+  await loadBatteryMap();
   await loadWorkers();
   await loadDevices();
 }
@@ -403,21 +424,48 @@ WORKERS TABLE
   tbody.innerHTML = "";
 
   if (data.length === 0) {
-  tbody.innerHTML = "<tr><td colspan='3'>No workers</td></tr>";
+  tbody.innerHTML = "<tr><td colspan='4'>No workers</td></tr>";
   return;
   }
 
-  data.forEach(w => {
-    const tr = document.createElement("tr");
+ data.forEach(w => {
+  const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td>${w.workerName || "Worker"}</td>
-      <td>${w.taskCount}</td>
-      <td>${w.totalTime.toFixed(1)}</td>
+  let taskHtml = "";
+
+  w.tasks.forEach(t => {
+
+    const b = batteryMap[t.batteryId];
+
+    const barcode = b?.barcode || "Unknown";
+    const typeName = b?.batteryType?.name || "Unknown";
+    const classification = b?.classification || "";
+    const storage = b?.storageSlot
+    ? `${b.batteryType?.name} (${b.batteryType?.chemistry}) – Shelf ${b.storageSlot.name}`
+    : "Unknown";
+
+    taskHtml += `
+      <div style="margin-bottom:8px; padding:6px; border-bottom:1px solid #ddd;">
+        <b>${barcode}</b> | ${typeName}
+        <br>
+      ${t.type} (${t.start.toFixed(0)} - ${t.end.toFixed(0)})
+        <br>
+        <small style="color:gray;">
+      ${classification} | From: ${storage}
+        </small>
+    </div>
     `;
+    });
 
-    tbody.appendChild(tr);
-  });
+  tr.innerHTML = `
+    <td>${w.workerName || "Worker " + w.workerId}</td>
+    <td>${w.taskCount}</td>
+    <td>${w.totalTime.toFixed(1)}</td>
+    <td>${taskHtml}</td>
+  `;
+
+  tbody.appendChild(tr);
+});
 }
   /*======================
   DEVICES TABLE
@@ -456,7 +504,8 @@ CONFIRM PROCESSING
   await fetch(`${BASE}/processing/confirm-all`, {
     method: "POST"
   });
-
+    
+  await loadBatteryMap();
   await loadWorkers();
   await loadDevices();
 }
@@ -485,7 +534,8 @@ function showPage(page) {
    INIT
 ========================= */
 window.onload = async () => {
-  await loadBatteryTypes(); // 🔥 tämä
+  await loadBatteryTypes(); 
+  await loadBatteryMap();   
   load();
   loadInserted();
 };
