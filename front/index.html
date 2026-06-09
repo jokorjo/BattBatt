@@ -533,17 +533,17 @@ WORKERS TABLE
     ? `${b.batteryType?.name} (${b.batteryType?.chemistry}) – Shelf ${b.storageSlot.name}`
     : "Unknown";
 
-    taskHtml += `
-      <div style="margin-bottom:8px; padding:6px; border-bottom:1px solid #ddd;">
-        <b>${barcode}</b> | ${typeName}
-        <br>
-      ${(t.start ?? 0).toFixed(0)} - ${(t.end ?? 0).toFixed(0)}
-        <br>
-        <small style="color:gray;">
+   taskHtml += `
+  <div style="margin-bottom:8px; padding:6px; border-bottom:1px solid #ddd;">
+    <b>${barcode}</b> | ${typeName}
+    <br>
+    ${t.type} (${(t.start ?? 0).toFixed(0)} - ${(t.end ?? 0).toFixed(0)})
+    <br>
+    <small style="color:gray;">
       ${classification} | From: ${storage}
-        </small>
-    </div>
-    `;
+    </small>
+  </div>
+`;
     });
 
   tr.innerHTML = `
