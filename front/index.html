@@ -96,6 +96,9 @@
   <button onclick="optimizeProcessing()">Optimize Processing</button>
   <button onclick="confirmProcessing()">Confirm Processing</button>
 
+    <h3>Pickup List (Grouped by Shelf)</h3>
+  <div id="pickupList"></div>
+    
   <h3>Worker Load</h3>
   <table border="1">
   <thead>
@@ -410,8 +413,75 @@ Processing optimization
   await loadBatteryMap();
   await loadWorkers();
   await loadDevices();
+  await loadPickupList();
 }
+/*======================
+PICKUP LIST
+=======================*/
+  async function loadPickupList() {
 
+  const res = await fetch(`${BASE}/processing/worker-summary`);
+  const data = await res.json();
+
+  const container = document.getElementById("pickupList");
+  container.innerHTML = "";
+
+  if (!data.length) {
+    container.innerHTML = "<p>No batteries selected</p>";
+    return;
+  }
+
+  // 🔥 kerää uniikit akut
+  const ids = new Set();
+  data.forEach(w => {
+    w.tasks.forEach(t => ids.add(t.batteryId));
+  });
+
+  // 🔥 groupataan
+  const grouped = {};
+
+  ids.forEach(id => {
+
+    const b = batteryMap[id];
+    if (!b || !b.storageSlot) return;
+    
+    // ❗ SKIP processing shelfs
+    if (b.storageSlot.name.startsWith("P")) return;
+
+    const key = `${b.batteryType?.name} (${b.batteryType?.chemistry}) – Shelf ${b.storageSlot.name}`;
+
+    if (!grouped[key]) {
+      grouped[key] = [];
+    }
+
+    grouped[key].push(b);
+  });
+
+  // 🔥 render
+  const sortedKeys = Object.keys(grouped).sort();
+
+  sortedKeys.forEach(group => {
+
+    let html = `
+      <div style="margin-top:15px;">
+        <b>${group}</b>
+      </div>
+    `;
+
+    grouped[group].forEach(b => {
+      html += `
+        <div style="margin-left:15px;">
+          - ${b.barcode} (${b.classification})
+        </div>
+      `;
+    });
+
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    container.appendChild(div);
+  });
+}
+  
 /*========================
 WORKERS TABLE
 ======================== */
@@ -448,7 +518,7 @@ WORKERS TABLE
       <div style="margin-bottom:8px; padding:6px; border-bottom:1px solid #ddd;">
         <b>${barcode}</b> | ${typeName}
         <br>
-      ${t.type} (${t.start.toFixed(0)} - ${t.end.toFixed(0)})
+      ${(t.start ?? 0).toFixed(0)} - ${(t.end ?? 0).toFixed(0)}
         <br>
         <small style="color:gray;">
       ${classification} | From: ${storage}
@@ -508,6 +578,7 @@ CONFIRM PROCESSING
   await loadBatteryMap();
   await loadWorkers();
   await loadDevices();
+  await loadPickupList();
 }
   
 /* =========================
@@ -526,8 +597,11 @@ function showPage(page) {
   if (active) active.style.display = "block";
 
   if (page === "processing") {
+  loadBatteryMap();
   loadWorkers();
-  loadDevices(); }
+  loadDevices();
+  loadPickupList(); 
+  }
 }
 
 /* =========================
