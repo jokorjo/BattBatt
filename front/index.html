@@ -2,6 +2,18 @@
 <html>
 <head>
   <title>Battery System</title>
+
+  <style>
+    .card {
+      padding:15px;
+      border:1px solid #ccc;
+      border-radius:10px;
+      min-width:120px;
+      text-align:center;
+      font-weight:bold;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -125,7 +137,28 @@
     
 </div>
   
-  <div id="dashboardPage" style="display:none"></div>
+  <div id="dashboardPage" style="display:none">
+
+  <h2>Dashboard</h2>
+
+  <!-- KPI -->
+  <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
+    <div class="card">Total: <span id="kpiTotal"></span></div>
+    <div class="card">Storage: <span id="kpiStorage"></span></div>
+    <div class="card">Processing: <span id="kpiProcessing"></span></div>
+    <div class="card">Ready: <span id="kpiReady"></span></div>
+    <div class="card">Shipped: <span id="kpiShipped"></span></div>
+  </div>
+
+  <!-- CHEMISTRY -->
+  <h3>By Chemistry</h3>
+  <div id="chemistryStats"></div>
+
+  <!-- TOP WORKER -->
+  <h3>Top Worker</h3>
+  <div id="topWorker"></div>
+
+</div>
   
   <div id="adminPage" style="display:none">
 
@@ -750,6 +783,10 @@ function showPage(page) {
   loadOutbound();
   renderShipped();
   }
+  if (page === "dashboard") {
+  loadDashboard();
+  loadTopWorker();
+  }
 }
 
 /* =========================
@@ -815,6 +852,67 @@ async function deleteBattery() {
 
   load();
   loadOutbound();
+}
+  // =========================
+// DASHBOARD
+// =========================
+
+async function loadDashboard() {
+
+  const res = await fetch(`${BASE}/batteries`);
+  const data = await res.json();
+
+  const total = data.length;
+
+  const processing = data.filter(b => b.inProcessing).length;
+
+  const ready = data.filter(b =>
+      !b.inProcessing &&
+      b.storageSlot?.name === "Outbound"
+    ).length;
+
+  const storage = total - processing - ready;
+
+  document.getElementById("kpiTotal").innerText = total;
+  document.getElementById("kpiProcessing").innerText = processing;
+  document.getElementById("kpiReady").innerText = ready;
+  document.getElementById("kpiStorage").innerText = storage;
+  document.getElementById("kpiShipped").innerText = shippedBatteries.length;
+
+  renderChemistry(data);
+}
+
+function renderChemistry(data) {
+
+  const stats = {};
+
+  data.forEach(b => {
+    const c = b.batteryType?.chemistry || "Other";
+    stats[c] = (stats[c] || 0) + 1;
+  });
+
+  const div = document.getElementById("chemistryStats");
+  div.innerHTML = "";
+
+  for (const key in stats) {
+    div.innerHTML += `<div>${key}: ${stats[key]}</div>`;
+  }
+}
+
+async function loadTopWorker() {
+
+  const res = await fetch(`${BASE}/processing/worker-summary`);
+  const data = await res.json();
+
+  if (!data.length) {
+    document.getElementById("topWorker").innerText = "No data";
+    return;
+  }
+
+  const best = data.sort((a,b) => b.taskCount - a.taskCount)[0];
+
+  document.getElementById("topWorker").innerText =
+    `Worker ${best.workerId} (${best.taskCount} tasks)`;
 }
 </script>
 
