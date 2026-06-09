@@ -192,15 +192,34 @@ function renderQueue() {
   const list = document.getElementById("batteryList");
   list.innerHTML = "";
 
-  queue.forEach(b => {
+  queue.forEach((b, index) => {
     const li = document.createElement("li");
 
     const typeName = batteryTypes[b.batteryType.id] || "Unknown";
 
-    li.innerText = `${b.barcode} | ${typeName} | ${b.classification}`;
+    li.innerHTML = `
+  <span style="display:flex; justify-content:space-between; align-items:center;">
+    
+    <span>
+      ${b.barcode} | ${typeName} | ${b.classification}
+    </span>
+
+    <span style="color:red; cursor:pointer;"
+          onclick="removeFromQueue(${index})"
+          onmouseover="this.style.opacity=0.5"
+          onmouseout="this.style.opacity=1">
+      ❌
+    </span>
+
+  </span>
+`;
 
     list.appendChild(li);
   });
+}
+  function removeFromQueue(index) {
+  queue.splice(index, 1);
+  renderQueue();
 }
 
 /* =========================
