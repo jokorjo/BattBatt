@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "https://batt-batt-pink.vercel.app")
 @RestController
 @RequestMapping("/api/slots")
 public class StorageSlotController {
