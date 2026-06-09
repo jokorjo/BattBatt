@@ -603,7 +603,7 @@ async function loadDevices() {
 
   const outbound = data.filter(b =>
     !b.inProcessing &&
-    b.storageSlot?.storageName === "Outbound"
+    b.storageSlot?.name?.startsWith("P")
   );
 
   if (outbound.length === 0) {
