@@ -9,7 +9,6 @@ import java.util.List;
 @CrossOrigin(origins = "https://batt-batt-pink.vercel.app")
 @RestController
 @RequestMapping("/api/devices")
-@CrossOrigin
 public class DeviceController {
 
     private final DeviceRepository repo;
