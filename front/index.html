@@ -862,13 +862,15 @@ async function loadDashboard() {
   const res = await fetch(`${BASE}/batteries`);
   const data = await res.json();
 
+  if (!document.getElementById("kpiTotal")) return;
+  
   const total = data.length;
 
   const processing = data.filter(b => b.inProcessing).length;
 
   const ready = data.filter(b =>
-      !b.inProcessing &&
-      b.storageSlot?.name === "Outbound"
+    !b.inProcessing &&
+    b.storageSlot?.name?.startsWith("P")
     ).length;
 
   const storage = total - processing - ready;
@@ -879,7 +881,8 @@ async function loadDashboard() {
   document.getElementById("kpiStorage").innerText = storage;
   document.getElementById("kpiShipped").innerText = shippedBatteries.length;
 
-  renderChemistry(data);
+  if (document.getElementById("chemistryStats")) {
+    renderChemistry(data); }
 }
 
 function renderChemistry(data) {
