@@ -158,6 +158,14 @@
   <h3>Top Worker</h3>
   <div id="topWorker"></div>
 
+  <!--Outbound dashboard -->
+  <h3>Outbound (Ready)</h3>
+  <div id="dashboardOutbound"></div>
+
+  <!--Shipped history -->
+  <h3>Shipped History</h3>
+  <div id="dashboardShipped"></div>
+    
 </div>
   
   <div id="adminPage" style="display:none">
@@ -883,7 +891,10 @@ async function loadDashboard() {
 
   if (document.getElementById("chemistryStats")) {
     renderChemistry(data); }
+    renderDashboardOutbound(data);
+    renderDashboardShipped();
 }
+  
 
 function renderChemistry(data) {
 
@@ -916,6 +927,51 @@ async function loadTopWorker() {
 
   document.getElementById("topWorker").innerText =
     `Worker ${best.workerId} (${best.taskCount} tasks)`;
+}
+  function renderDashboardOutbound(data) {
+
+  const container = document.getElementById("dashboardOutbound");
+  container.innerHTML = "";
+
+  const outbound = data.filter(b =>
+    !b.inProcessing &&
+    b.storageSlot?.name?.startsWith("P")
+  );
+
+  if (!outbound.length) {
+    container.innerHTML = "<p>No outbound batteries</p>";
+    return;
+  }
+
+  outbound.forEach(b => {
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      ${b.barcode} | ${b.batteryType?.name}
+    `;
+
+    container.appendChild(div);
+  });
+}
+function renderDashboardShipped() {
+
+  const container = document.getElementById("dashboardShipped");
+  container.innerHTML = "";
+
+  if (!shippedBatteries.length) {
+    container.innerHTML = "<p>No shipped batteries</p>";
+    return;
+  }
+
+  shippedBatteries.forEach(b => {
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      ✔ ${b.barcode} (${b.type}) – ${b.time}
+    `;
+
+    container.appendChild(div);
+  });
 }
 </script>
 
