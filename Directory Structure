@@ -1,0 +1,57 @@
+api/
+└── src/
+    └── main/
+        ├── java/
+        │   └── com/
+        │       └── battbatt/
+        │           ├── config/
+        │           │   └── DataLoader.java
+        │           │
+        │           ├── controller/
+        │           │   ├── AdminController.java
+        │           │   ├── BatteryController.java
+        │           │   ├── DeviceController.java
+        │           │   ├── OptimizationController.java
+        │           │   ├── ProcessingController.java
+        │           │   └── StorageSlotController.java
+        │           │
+        │           ├── dto/
+        │           │   └── StorageSummary.java
+        │           │
+        │           ├── entity/
+        │           │   ├── Battery.java
+        │           │   ├── BatteryType.java
+        │           │   ├── Device.java
+        │           │   ├── DeviceProfile.java
+        │           │   ├── Storage.java
+        │           │   └── StorageSlot.java
+        │           │
+        │           ├── repository/
+        │           │   ├── BatteryRepository.java
+        │           │   ├── BatteryTypeRepository.java
+        │           │   ├── DeviceProfileRepository.java
+        │           │   ├── DeviceRepository.java
+        │           │   ├── StorageRepository.java
+        │           │   └── StorageSlotRepository.java
+        │           │
+        │           ├── service/
+        │           │   ├── ProcessingOptimizationService.java
+        │           │   └── StorageOptimizationService.java
+        │           │
+        │           ├── solver/
+        │           │   └── old/
+        │           │       ├── BatteryConstraintProvider.java
+        │           │       └── BatteryPlan.java
+        │           │
+        │           ├── BattBattApplication.java
+        │
+        ├── resources/
+        │   ├── application.properties
+        │   └── solverConfig.xml
+        │
+        ├── Dockerfile
+        └── pom.xml
+
+front/
+├── index.html
+└── main.js
